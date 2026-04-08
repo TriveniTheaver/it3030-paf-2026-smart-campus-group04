@@ -86,7 +86,7 @@ export default function HomePage() {
             <h1 className="sc-page-title text-sliit-navy mb-4 leading-none">
               EVOLVE<br/>BEYOND
             </h1>
-            <div className="w-24 h-2 bg-sliit-orange mb-8"></div>
+            <div className="w-28 h-2 bg-sliit-orange mb-8"></div>
             <p className="sc-body text-slate-700 mb-10 leading-relaxed">
               Access the official SLIIT facility management gateway.<br/>
               Securely book resources, track campus activities, and<br/>
