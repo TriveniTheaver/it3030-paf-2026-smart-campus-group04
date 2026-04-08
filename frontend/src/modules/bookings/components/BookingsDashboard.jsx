@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar as CalendarIcon, Clock, CheckCircle, XCircle, AlertCircle, Ban, History, Filter } from 'lucide-react';
 import { useAuth } from '../../core/contexts/AuthContext';
 import { format } from 'date-fns';
@@ -11,11 +11,7 @@ const BookingsDashboard = () => {
   const [filter, setFilter] = useState('');
   const [processingId, setProcessingId] = useState(null);
 
-  useEffect(() => {
-    fetchBookings();
-  }, [currentUser, filter]);
-
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     setLoading(true);
     try {
       const endpoint = currentUser?.role === 'ADMIN' ? '/api/bookings/all' : '/api/bookings/my';
@@ -27,7 +23,11 @@ const BookingsDashboard = () => {
       console.error('Failed to fetch bookings', error);
       setLoading(false);
     }
-  };
+  }, [currentUser?.role, filter]);
+
+  useEffect(() => {
+    fetchBookings();
+  }, [fetchBookings]);
 
   const handleUpdateStatus = async (id, status) => {
     let reason = '';
@@ -40,7 +40,7 @@ const BookingsDashboard = () => {
     try {
       await axios.put(`/api/bookings/${id}/status?status=${status}&reason=${reason}`);
       fetchBookings();
-    } catch (error) {
+    } catch {
       alert('Operation failed. Please try again.');
     } finally {
       setProcessingId(null);
@@ -53,7 +53,7 @@ const BookingsDashboard = () => {
     try {
       await axios.put(`/api/bookings/${id}/cancel`);
       fetchBookings();
-    } catch (error) {
+    } catch {
       alert('Failed to cancel. You may not be authorized.');
     } finally {
       setProcessingId(null);
@@ -68,7 +68,7 @@ const BookingsDashboard = () => {
       CANCELLED: 'bg-slate-50 text-slate-500 border-slate-200'
     };
     return (
-      <span className={`px-4 py-1.5 text-[10px] font-black rounded-full border shadow-sm uppercase tracking-widest ${styles[status]}`}>
+      <span className={`px-4 py-1.5 text-xs font-semibold rounded-full border shadow-sm ${styles[status]}`}>
         {status}
       </span>
     );
@@ -78,10 +78,10 @@ const BookingsDashboard = () => {
     <div className="p-8 max-w-[1400px] mx-auto animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12">
         <div>
-          <h1 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-4">
+          <h1 className="sc-page-title text-slate-900 flex items-center gap-4">
             {currentUser?.role === 'ADMIN' ? 'Reservations Command' : 'My Campus Activity'}
           </h1>
-          <p className="text-slate-500 mt-2 font-medium">
+          <p className="sc-body text-slate-600 mt-2">
             {currentUser?.role === 'ADMIN' 
               ? 'Review and manage facility booking requests across the entire campus.' 
               : 'Track your pending requests and view your booking history.'}
@@ -94,7 +94,7 @@ const BookingsDashboard = () => {
             <select 
               value={filter} 
               onChange={(e) => setFilter(e.target.value)}
-              className="bg-transparent border-none focus:ring-0 font-black text-xs uppercase tracking-widest text-slate-600 cursor-pointer"
+              className="bg-transparent border-none focus:ring-0 sc-label text-slate-600 cursor-pointer"
             >
               <option value="">All Statuses</option>
               <option value="PENDING">Pending</option>
@@ -110,10 +110,10 @@ const BookingsDashboard = () => {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-32 text-slate-300 gap-4">
             <div className="w-12 h-12 border-4 border-slate-100 border-t-sliit-orange rounded-full animate-spin"></div>
-            <span className="font-black text-xs uppercase tracking-[0.2em]">Synchronizing Stream...</span>
+            <span className="sc-label text-slate-300">Synchronizing stream…</span>
           </div>
         ) : bookings.length === 0 ? (
-          <div className="bg-white rounded-[3rem] p-32 text-center border-4 border-dashed border-slate-100 italic font-medium text-slate-400">
+          <div className="bg-white rounded-[3rem] p-32 text-center border-4 border-dashed border-slate-100 font-medium text-slate-400">
              No reservation records found.
           </div>
         ) : (
@@ -124,30 +124,30 @@ const BookingsDashboard = () => {
 
               <div className="flex-1 space-y-6">
                 <div className="flex flex-wrap items-center gap-4">
-                  <h3 className="text-2xl font-black text-slate-900 tracking-tight group-hover:text-sliit-blue transition-colors">
+                  <h3 className="sc-section-title text-slate-900 group-hover:text-sliit-blue transition-colors">
                     {booking.resource?.name || 'Unknown Asset'}
                   </h3>
                   <StatusBadge status={booking.status} />
                   {currentUser?.role === 'ADMIN' && (
-                    <span className="text-[10px] font-black text-slate-400 bg-slate-100 px-3 py-1 rounded-full uppercase tracking-tighter">
+                    <span className="text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
                       Requested by: {booking.user?.name || booking.user?.email}
                     </span>
                   )}
                 </div>
 
                 <div className="flex flex-col gap-2">
-                   <p className="text-slate-600 font-bold text-lg leading-snug">"{booking.purpose}"</p>
-                   <p className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                   <p className="sc-body text-slate-700 leading-snug">"{booking.purpose}"</p>
+                   <p className="sc-meta flex items-center gap-2">
                       <History size={14} /> Expected Scale: {booking.expectedAttendees || 1} PAX
                    </p>
                 </div>
                 
                 <div className="flex flex-wrap gap-4 pt-4">
-                  <div className="flex items-center gap-3 bg-slate-50 px-6 py-3 rounded-2xl border border-slate-100 text-slate-700 font-black text-sm shadow-sm transition-transform active:scale-95">
+                  <div className="flex items-center gap-3 bg-slate-50 px-6 py-3 rounded-2xl border border-slate-100 text-slate-700 font-semibold text-sm shadow-sm transition-transform active:scale-95">
                     <CalendarIcon size={18} className="text-sliit-orange" />
                     {format(new Date(booking.startTime), 'EEEE, MMMM do')}
                   </div>
-                  <div className="flex items-center gap-3 bg-slate-50 px-6 py-3 rounded-2xl border border-slate-100 text-slate-700 font-black text-sm shadow-sm transition-transform active:scale-95">
+                  <div className="flex items-center gap-3 bg-slate-50 px-6 py-3 rounded-2xl border border-slate-100 text-slate-700 font-semibold text-sm shadow-sm transition-transform active:scale-95">
                     <Clock size={18} className="text-sliit-orange" />
                     {format(new Date(booking.startTime), 'hh:mm a')} – {format(new Date(booking.endTime), 'hh:mm a')}
                   </div>
@@ -157,8 +157,8 @@ const BookingsDashboard = () => {
                   <div className="mt-4 flex items-start gap-3 bg-rose-50/50 p-5 rounded-3xl border border-rose-100/50 animate-in slide-in-from-top-2">
                     <AlertCircle size={20} className="text-rose-500 shrink-0 mt-1" />
                     <div>
-                      <span className="block text-[10px] font-black text-rose-400 uppercase tracking-widest mb-1">Administrator Feedback</span>
-                      <p className="text-sm text-rose-700 font-bold">{booking.adminReason}</p>
+                      <span className="block sc-label text-rose-500 mb-1">Administrator feedback</span>
+                      <p className="text-sm text-rose-700 font-semibold">{booking.adminReason}</p>
                     </div>
                   </div>
                 )}
@@ -176,7 +176,7 @@ const BookingsDashboard = () => {
                     {currentUser?.role !== 'ADMIN' && (booking.status === 'PENDING' || booking.status === 'APPROVED') && (
                       <button 
                         onClick={() => handleCancel(booking.id)}
-                        className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white border-2 border-slate-100 text-slate-500 font-black rounded-2xl hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all active:scale-95 text-xs tracking-widest uppercase"
+                        className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white border-2 border-slate-100 text-slate-500 font-semibold rounded-2xl hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all active:scale-95 text-sm"
                       >
                         <Ban size={18} /> Revoke Request
                       </button>
@@ -187,13 +187,13 @@ const BookingsDashboard = () => {
                       <>
                         <button 
                           onClick={() => handleUpdateStatus(booking.id, 'APPROVED')}
-                          className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-emerald-600 text-white font-black rounded-2xl hover:bg-emerald-700 shadow-xl shadow-emerald-500/20 transition-all active:scale-95 text-xs tracking-widest uppercase"
+                          className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-emerald-600 text-white font-semibold rounded-2xl hover:bg-emerald-700 shadow-xl shadow-emerald-500/20 transition-all active:scale-95 text-sm"
                         >
                           <CheckCircle size={18} /> Confirm
                         </button>
                         <button 
                           onClick={() => handleUpdateStatus(booking.id, 'REJECTED')}
-                          className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-slate-900 text-white font-black rounded-2xl hover:bg-black shadow-xl shadow-slate-900/20 transition-all active:scale-95 text-xs tracking-widest uppercase"
+                          className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-slate-900 text-white font-semibold rounded-2xl hover:bg-black shadow-xl shadow-slate-900/20 transition-all active:scale-95 text-sm"
                         >
                           <XCircle size={18} /> Decline
                         </button>

@@ -68,8 +68,8 @@ const BookingModal = ({ isOpen, onClose, resource, onBookingSuccess }) => {
         {/* Modal Header */}
         <div className="bg-slate-900 p-8 flex justify-between items-center text-white relative">
           <div className="relative z-10">
-            <h2 className="text-2xl font-black tracking-tight mb-1">Reserve Space</h2>
-            <p className="text-slate-400 font-bold text-sm uppercase tracking-widest">{resource.name}</p>
+            <h2 className="sc-section-title mb-1 text-white">Reserve space</h2>
+            <p className="text-slate-400 text-sm font-medium">{resource.name}</p>
           </div>
           <button onClick={onClose} className="bg-white/10 hover:bg-white/20 p-3 rounded-2xl transition-all relative z-10">
             <X size={20} />
@@ -84,15 +84,15 @@ const BookingModal = ({ isOpen, onClose, resource, onBookingSuccess }) => {
           <div className="bg-amber-50/50 p-5 rounded-3xl border border-amber-100/50 flex items-start gap-4">
             <Info size={20} className="text-amber-600 mt-1 shrink-0" />
             <div>
-              <span className="block text-[10px] font-black text-amber-500 uppercase tracking-widest mb-1">Facility Availability Window</span>
-              <p className="text-sm font-black text-amber-800 uppercase tracking-tighter">
+              <span className="block sc-label text-amber-700 mb-1">Facility availability</span>
+              <p className="text-sm font-semibold text-amber-900">
                 Open Daily: {resource.availableFrom?.substring(0,5) || '08:00'} — {resource.availableTo?.substring(0,5) || '18:00'}
               </p>
             </div>
           </div>
 
           {error && (
-            <div className="bg-rose-50 text-rose-600 p-5 rounded-3xl text-sm font-black flex items-center gap-4 border border-rose-100 animate-in slide-in-from-top-2">
+            <div className="bg-rose-50 text-rose-600 p-5 rounded-3xl text-sm font-medium flex items-center gap-4 border border-rose-100 animate-in slide-in-from-top-2">
               <AlertCircle size={22} className="shrink-0" /> 
               <span>{error}</span>
             </div>
@@ -100,34 +100,34 @@ const BookingModal = ({ isOpen, onClose, resource, onBookingSuccess }) => {
 
           <div className="grid grid-cols-2 gap-6">
             <div className="col-span-2">
-              <label className="block text-[10px] font-black text-slate-400 mb-3 uppercase tracking-[0.2em] ml-2">Reservation Date</label>
+              <label className="block sc-label mb-3 ml-2">Reservation date</label>
               <div className="relative">
                 <CalendarIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input 
                   type="date" name="date" required
                   value={formData.date} onChange={handleChange}
-                  className="w-full bg-slate-50 border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-orange-500/10 focus:border-sliit-orange pl-14 pr-4 py-4 border-2 outline-none transition-all font-black text-slate-700"
+                  className="w-full bg-slate-50 border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-orange-500/10 focus:border-sliit-orange pl-14 pr-4 py-4 border-2 outline-none transition-all font-semibold text-slate-700"
                 />
               </div>
             </div>
 
             <div className="space-y-3">
-              <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-[0.2em] ml-2">Start Time</label>
+              <label className="block sc-label mb-1 ml-2">Start time</label>
               <div className="relative">
                 <Clock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input 
                   type="time" name="startTime" required
                   value={formData.startTime} onChange={handleChange}
-                  className="w-full bg-slate-50 border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-orange-500/10 focus:border-sliit-orange pl-14 pr-4 py-4 border-2 outline-none transition-all font-black text-slate-700"
+                  className="w-full bg-slate-50 border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-orange-500/10 focus:border-sliit-orange pl-14 pr-4 py-4 border-2 outline-none transition-all font-semibold text-slate-700"
                 />
               </div>
             </div>
 
             <div className="space-y-3">
-              <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-[0.2em] ml-2">Duration (Hours)</label>
+              <label className="block sc-label mb-1 ml-2">Duration (hours)</label>
               <select 
                 name="duration" value={formData.duration} onChange={handleChange}
-                className="w-full bg-slate-50 border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-orange-500/10 focus:border-sliit-orange p-4 border-2 outline-none cursor-pointer font-black text-slate-700"
+                className="w-full bg-slate-50 border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-orange-500/10 focus:border-sliit-orange p-4 border-2 outline-none cursor-pointer font-semibold text-slate-700"
               >
                 <option value="1">1 Hour Block</option>
                 <option value="2">2 Hour Block</option>
@@ -138,37 +138,37 @@ const BookingModal = ({ isOpen, onClose, resource, onBookingSuccess }) => {
             </div>
 
             <div className="col-span-2">
-              <label className="block text-[10px] font-black text-slate-400 mb-3 uppercase tracking-[0.2em] ml-2">Request Purpose</label>
+              <label className="block sc-label mb-3 ml-2">Request purpose</label>
               <input 
                 type="text" name="purpose" required
                 value={formData.purpose} onChange={handleChange}
                 placeholder="e.g. SEM 2 Tutorial / Group Project Work"
-                className="w-full bg-slate-50 border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-orange-500/10 focus:border-sliit-orange p-4 border-2 outline-none transition-all font-black text-slate-700 placeholder:text-slate-300"
+                className="w-full bg-slate-50 border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-orange-500/10 focus:border-sliit-orange p-4 border-2 outline-none transition-all font-semibold text-slate-700 placeholder:text-slate-300"
               />
             </div>
 
             <div className="col-span-2">
-              <label className="block text-[10px] font-black text-slate-400 mb-3 uppercase tracking-[0.2em] ml-2">Expected Attendees</label>
+              <label className="block sc-label mb-3 ml-2">Expected attendees</label>
               <div className="relative">
                 <Users className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input 
                   type="number" name="expectedAttendees" required
                   value={formData.expectedAttendees} onChange={handleChange}
                   min="1" max={resource.capacity}
-                  className="w-full bg-slate-50 border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-orange-500/10 focus:border-sliit-orange pl-14 pr-4 py-4 border-2 outline-none transition-all font-black text-slate-700"
+                  className="w-full bg-slate-50 border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-orange-500/10 focus:border-sliit-orange pl-14 pr-4 py-4 border-2 outline-none transition-all font-semibold text-slate-700"
                 />
               </div>
             </div>
           </div>
 
           <div className="pt-6 border-t border-slate-100 flex gap-4">
-            <button onClick={onClose} type="button" className="flex-1 py-5 border-2 border-slate-100 rounded-2xl font-black text-slate-500 hover:bg-slate-50 active:scale-95 transition-all text-xs uppercase tracking-widest">
+            <button onClick={onClose} type="button" className="flex-1 py-5 border-2 border-slate-100 rounded-2xl font-semibold text-slate-500 hover:bg-slate-50 active:scale-95 transition-all text-sm">
               Stay Browsing
             </button>
             <button 
               type="submit" 
               disabled={loading}
-              className="flex-[2] py-5 bg-sliit-orange text-white rounded-2xl font-black hover:bg-orange-600 disabled:opacity-50 disabled:grayscale flex items-center justify-center gap-3 shadow-2xl shadow-orange-500/30 active:scale-95 transition-all text-xs uppercase tracking-widest"
+              className="flex-[2] py-5 bg-sliit-orange text-white rounded-2xl font-semibold hover:bg-orange-600 disabled:opacity-50 disabled:grayscale flex items-center justify-center gap-3 shadow-2xl shadow-orange-500/30 active:scale-95 transition-all text-sm"
             >
               {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : <><Send size={18} /> Dispatch Request</>}
             </button>

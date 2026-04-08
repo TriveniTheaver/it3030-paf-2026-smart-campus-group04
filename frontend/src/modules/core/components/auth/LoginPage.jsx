@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Mail, Lock, ShieldAlert, ArrowRight, Activity, LogIn } from 'lucide-react';
+import { Mail, Lock, ShieldAlert, ArrowRight, Activity } from 'lucide-react';
 
 export default function LoginPage() {
-  const { login, overrideToken, loginWithGoogle } = useAuth();
+  const { login, overrideToken } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [portalType, setPortalType] = useState('CLIENT'); // 'CLIENT' | 'STAFF'
@@ -14,6 +14,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  /* eslint-disable react-hooks/set-state-in-effect -- derive UI error state from URL params */
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const token = params.get('token');
@@ -26,6 +27,7 @@ export default function LoginPage() {
       setError('Google Sign-In is restricted to SLIIT university emails only (@my.sliit.lk or @sliit.lk).');
     }
   }, [location, overrideToken, navigate]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,7 +36,7 @@ export default function LoginPage() {
     try {
       await login(email, password);
       navigate('/dashboard');
-    } catch (err) {
+    } catch {
       setError('Invalid credentials. Please verify your email and password.');
     }
     setLoading(false);
@@ -48,8 +50,8 @@ export default function LoginPage() {
         <div className="bg-sliit-blue text-white p-12 flex flex-col justify-center items-start md:w-5/12 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-sliit-orange rounded-bl-full opacity-10 transform translate-x-12 -translate-y-12"></div>
           <Activity className="w-16 h-16 text-sliit-orange mb-6" />
-          <h1 className="text-4xl font-bold mb-4">SLIIT<br/>SmartCampus Hub</h1>
-          <p className="text-slate-300 text-lg">Integrated Campus Operations & Facilities Management</p>
+          <h1 className="sc-page-title text-white mb-4">SLIIT<br/>SmartCampus Hub</h1>
+          <p className="text-slate-300 sc-body">Integrated Campus Operations & Facilities Management</p>
         </div>
 
         {/* Login Form Side */}
@@ -72,10 +74,10 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <h2 className="text-2xl font-bold text-sliit-navy mb-2">
+          <h2 className="sc-section-title text-sliit-navy mb-2">
             {portalType === 'CLIENT' ? 'Welcome Back' : 'Authorized Personnel Only'}
           </h2>
-          <p className="text-slate-500 mb-8">
+          <p className="sc-meta mb-8">
             {portalType === 'CLIENT' ? 'Sign in to book resources and report issues.' : 'Access administrative controls and operational tickets.'}
           </p>
 
@@ -127,7 +129,7 @@ export default function LoginPage() {
             <button 
               type="submit" 
               disabled={loading}
-              className={`w-full py-3 px-4 rounded-lg font-bold text-white flex justify-center items-center gap-2 transition-all shadow-md hover:shadow-lg ${portalType === 'CLIENT' ? 'bg-sliit-blue hover:bg-sliit-navy' : 'bg-sliit-orange hover:bg-orange-600'} ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`w-full py-3 px-4 rounded-lg font-semibold text-white flex justify-center items-center gap-2 transition-all shadow-md hover:shadow-lg ${portalType === 'CLIENT' ? 'bg-sliit-blue hover:bg-sliit-navy' : 'bg-sliit-orange hover:bg-orange-600'} ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
               {loading ? 'Authenticating...' : 'Sign In'}
               {!loading && <ArrowRight className="w-5 h-5" />}
@@ -136,7 +138,7 @@ export default function LoginPage() {
 
           {portalType === 'CLIENT' && (
             <div className="mt-8 text-center text-sm text-slate-500">
-              Don't have an account? <Link to="/register" className="font-bold text-sliit-blue hover:text-sliit-orange transition-colors">Register here</Link>
+              Don't have an account? <Link to="/register" className="sc-link text-sliit-blue hover:text-sliit-orange transition-colors">Register here</Link>
             </div>
           )}
         </div>
