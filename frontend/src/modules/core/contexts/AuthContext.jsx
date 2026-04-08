@@ -1,9 +1,8 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import axios from 'axios';
 
+/* eslint-disable react-refresh/only-export-components -- context module exports hook + provider by design */
 const AuthContext = createContext();
-
-export const useAuth = () => useContext(AuthContext);
 
 function decodeJwt(token) {
   try {
@@ -13,33 +12,33 @@ function decodeJwt(token) {
         '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
     ).join(''));
     return JSON.parse(jsonPayload);
-  } catch (e) {
+  } catch {
     return null;
   }
 }
 
-export const AuthProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+export const useAuth = () => useContext(AuthContext);
 
-  useEffect(() => {
+export const AuthProvider = ({ children }) => {
+  const [currentUser, setCurrentUser] = useState(() => {
     const token = localStorage.getItem('token');
     if (token) {
       const decoded = decodeJwt(token);
       if (decoded && decoded.exp * 1000 > Date.now()) {
-        setCurrentUser({
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        return {
           id: decoded.id,
           name: decoded.name,
           email: decoded.sub,
           role: decoded.role
-        });
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      } else {
-        localStorage.removeItem('token');
+        };
       }
+
+      localStorage.removeItem('token');
     }
-    setLoading(false);
-  }, []);
+
+    return null;
+  });
 
   const login = async (email, password) => {
     const res = await axios.post('/api/auth/login', { email, password });
@@ -86,7 +85,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };

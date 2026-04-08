@@ -15,3 +15,31 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+@layer utilities {
+  /* Shared typography scale (use across all pages for consistency) */
+  .sc-brand {
+    @apply text-3xl font-black tracking-tight;
+  }
+  .sc-page-title {
+    @apply text-4xl font-extrabold tracking-tight;
+  }
+  .sc-section-title {
+    @apply text-2xl font-bold tracking-tight;
+  }
+  .sc-card-title {
+    @apply text-lg font-bold leading-tight;
+  }
+  .sc-body {
+    @apply text-base font-medium;
+  }
+  .sc-meta {
+    @apply text-sm font-medium text-slate-600;
+  }
+  .sc-label {
+    @apply text-xs font-semibold text-slate-500;
+  }
+  .sc-link {
+    @apply text-sm font-semibold;
+  }
+}
+

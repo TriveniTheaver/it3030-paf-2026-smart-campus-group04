@@ -1,0 +1,19 @@
+# Build outputs
+**/target/
+*.class
+
+# Node/Vite
+**/node_modules/
+**/dist/
+
+# IDE/editor
+.idea/
+.vscode/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Local-only assets folder (kept in frontend/public instead)
+images/
+
