@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useNavigate, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './modules/core/contexts/AuthContext';
 import NotificationPanel from './modules/core/contexts/NotificationPanel';
 import FacilitiesDashboard from './modules/facilities/components/FacilitiesDashboard';
@@ -16,6 +16,16 @@ import HomePage from './modules/core/components/public/HomePage';
 const Navbar = () => {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const getNavClass = (path) => {
+    const isActive = path === '/' ? location.pathname === '/' : location.pathname.startsWith(path);
+    return `px-5 py-4 text-xs font-bold transition-all flex items-center gap-1 uppercase tracking-wider ${
+      isActive 
+        ? "text-yellow-400 hover:text-yellow-300 hover:bg-white/5 bg-white/5"
+        : "text-slate-200 hover:text-white hover:bg-white/5"
+    }`;
+  };
 
   return (
     <header className="flex flex-col relative z-50">
@@ -70,19 +80,19 @@ const Navbar = () => {
           <div className="w-5 h-5 flex items-center justify-center">🏠</div>
         </Link>
         <div className="flex items-center px-4 space-x-2">
-          <Link to="/" className="px-5 py-4 text-xs font-bold text-slate-200 hover:text-white hover:bg-white/5 transition-all flex items-center gap-1 uppercase tracking-wider">
+          <Link to="/" className={getNavClass('/')}>
             Home <span className="opacity-40 ml-1">⌄</span>
           </Link>
-          <Link to="/dashboard" className="px-5 py-4 text-xs font-bold text-slate-200 hover:text-white hover:bg-white/5 transition-all flex items-center gap-1 uppercase tracking-wider">
+          <Link to="/dashboard" className={getNavClass('/dashboard')}>
             Programmes <span className="opacity-40 ml-1">⌄</span>
           </Link>
-          <Link to="/resources" className="px-5 py-4 text-xs font-bold text-yellow-400 hover:text-yellow-300 hover:bg-white/5 transition-all flex items-center gap-1 uppercase tracking-wider">
+          <Link to="/resources" className={getNavClass('/resources')}>
             Resources <span className="opacity-40 ml-1">⌄</span>
           </Link>
-          <Link to="/bookings" className="px-5 py-4 text-xs font-bold text-slate-200 hover:text-white hover:bg-white/5 transition-all flex items-center gap-1 uppercase tracking-wider">
+          <Link to="/bookings" className={getNavClass('/bookings')}>
             My Bookings <span className="opacity-40 ml-1">⌄</span>
           </Link>
-          <Link to="/incidents" className="px-5 py-4 text-xs font-bold text-slate-200 hover:text-white hover:bg-white/5 transition-all flex items-center gap-1 uppercase tracking-wider">
+          <Link to="/incidents" className={getNavClass('/incidents')}>
              Support <span className="opacity-40 ml-1">⌄</span>
           </Link>
         </div>

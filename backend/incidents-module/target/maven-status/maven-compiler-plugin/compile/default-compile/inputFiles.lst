@@ -1,0 +1,7 @@
+D:\Desktop\PAF Project\it3030-paf-2026-smart-campus-group04\backend\incidents-module\src\main\java\com\smartcampus\incidents\controller\TicketController.java
+D:\Desktop\PAF Project\it3030-paf-2026-smart-campus-group04\backend\incidents-module\src\main\java\com\smartcampus\incidents\model\Comment.java
+D:\Desktop\PAF Project\it3030-paf-2026-smart-campus-group04\backend\incidents-module\src\main\java\com\smartcampus\incidents\model\Ticket.java
+D:\Desktop\PAF Project\it3030-paf-2026-smart-campus-group04\backend\incidents-module\src\main\java\com\smartcampus\incidents\model\TicketStatus.java
+D:\Desktop\PAF Project\it3030-paf-2026-smart-campus-group04\backend\incidents-module\src\main\java\com\smartcampus\incidents\repository\CommentRepository.java
+D:\Desktop\PAF Project\it3030-paf-2026-smart-campus-group04\backend\incidents-module\src\main\java\com\smartcampus\incidents\repository\TicketRepository.java
+D:\Desktop\PAF Project\it3030-paf-2026-smart-campus-group04\backend\incidents-module\src\main\java\com\smartcampus\incidents\service\TicketService.java

@@ -1,0 +1,6 @@
+com\smartcampus\facilities\model\ResourceType.class
+com\smartcampus\facilities\controller\ResourceController.class
+com\smartcampus\facilities\model\Resource.class
+com\smartcampus\facilities\model\ResourceStatus.class
+com\smartcampus\facilities\model\Resource$ResourceBuilder.class
+com\smartcampus\facilities\repository\ResourceRepository.class

@@ -1,0 +1,17 @@
+com\smartcampus\core\controller\UserController.class
+com\smartcampus\core\security\JwtService.class
+com\smartcampus\core\security\OAuth2SuccessHandler.class
+com\smartcampus\core\controller\AuthController$LoginRequest.class
+com\smartcampus\core\controller\NotificationController.class
+com\smartcampus\core\security\JwtAuthenticationFilter.class
+com\smartcampus\core\repository\UserRepository.class
+com\smartcampus\core\model\User$Builder.class
+com\smartcampus\core\model\Role.class
+com\smartcampus\core\security\ApplicationConfig.class
+com\smartcampus\core\repository\NotificationRepository.class
+com\smartcampus\core\model\Notification$Builder.class
+com\smartcampus\core\controller\AuthController$AuthResponse.class
+com\smartcampus\core\model\User.class
+com\smartcampus\core\controller\AuthController.class
+com\smartcampus\core\security\SecurityConfig.class
+com\smartcampus\core\model\Notification.class
