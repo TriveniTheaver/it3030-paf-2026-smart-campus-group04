@@ -11,7 +11,8 @@
 body {
   margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  background-color: var(--color-sliit-light);
+  /* Clean, non-gradient SLIIT-themed page background */
+  background-color: #E3E7ED;
   -webkit-font-smoothing: antialiased;
 }
 

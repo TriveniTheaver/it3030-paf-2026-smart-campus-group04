@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useNavigate, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './modules/core/contexts/AuthContext';
 import NotificationPanel from './modules/core/contexts/NotificationPanel';
@@ -6,6 +6,7 @@ import FacilitiesDashboard from './modules/facilities/components/FacilitiesDashb
 import BookingsDashboard from './modules/bookings/components/BookingsDashboard';
 import IncidentsDashboard from './modules/incidents/components/IncidentsDashboard';
 import AdminNotifications from './modules/core/components/admin/AdminNotifications';
+import AdminFacilitiesAnalytics from './modules/facilities/components/AdminFacilitiesAnalytics';
 
 import LoginPage from './modules/core/components/auth/LoginPage';
 import RegisterPage from './modules/core/components/auth/RegisterPage';
@@ -16,18 +17,46 @@ import HomePage from './modules/core/components/public/HomePage';
 const Navbar = () => {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
+  const [opsOpen, setOpsOpen] = useState(false);
+  const opsMenuRef = useRef(null);
+
+  const opsItems = useMemo(() => {
+    if (currentUser?.role !== 'ADMIN') return [];
+    return [
+      { to: '/dashboard', label: 'Central Command Overview', desc: 'Back to admin dashboard' },
+      { to: '/facilities', label: 'Manage Catalogue', desc: 'Resources & assets catalogue' },
+      { to: '/bookings', label: 'Booking Queue', desc: 'Approve / reject requests' },
+      { to: '/incidents', label: 'System Triage', desc: 'Assign & resolve tickets' },
+      { to: '/admin/notifications', label: 'Notifications', desc: 'Broadcast announcements' },
+      { to: '/admin/facilities-analytics', label: 'Facilities Analytics', desc: 'Usage insights & trends' },
+    ];
+  }, [currentUser?.role]);
+
+  useEffect(() => {
+    if (!opsOpen) return;
+    const onDown = (e) => {
+      const el = opsMenuRef.current;
+      if (!el) return;
+      if (el.contains(e.target)) return;
+      setOpsOpen(false);
+    };
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, [opsOpen]);
 
   return (
     <header className="flex flex-col relative z-50">
       {/* Top Header - White */}
-      <div className="bg-white px-8 py-6 flex justify-between items-center shadow-sm">
-        <div className="flex items-center gap-4 cursor-pointer group" onClick={() => navigate('/')}>
-          <div className="flex flex-col">
-            <span className="text-sliit-blue sc-brand leading-none">SLIIT UNI</span>
-            <span className="text-xs font-medium text-slate-500 mt-1 leading-none">The Knowledge University</span>
+      <div className="bg-white px-8 py-6 flex justify-between items-center border-b border-slate-200 shadow-sm">
+        <div className="flex items-center gap-5 cursor-pointer group" onClick={() => navigate('/')}>
+          <div className="flex items-start gap-4">
+            <div className="flex flex-col">
+              <span className="text-sliit-blue sc-brand leading-none">SLIIT UNI</span>
+              <span className="text-xs font-medium text-slate-500 mt-1 leading-none">The Knowledge University</span>
+            </div>
+            <div className="h-12 w-px bg-slate-400/70" />
+            <span className="text-sliit-blue sc-brand leading-none pt-[1px]">SmartCampus Hub</span>
           </div>
-          <div className="h-10 w-px bg-slate-200 mx-2"></div>
-          <span className="text-sliit-blue sc-brand">SmartCampus Hub</span>
         </div>
         
         <div className="flex items-center gap-6">
@@ -65,26 +94,75 @@ const Navbar = () => {
       </div>
 
       {/* Bottom Navigation - Dark Grey */}
-      <nav className="bg-sliit-grey border-t-4 border-sliit-orange px-8 flex items-center overflow-x-auto no-scrollbar shadow-lg">
-        <Link to="/" className="p-4 bg-white/10 hover:bg-white/20 text-white transition-colors">
+      <nav className="bg-sliit-grey border-t-4 border-sliit-orange px-8 flex items-center shadow-lg overflow-visible relative z-50">
+        <Link to="/" title="Home" className="p-4 bg-white/10 hover:bg-white/20 text-white transition-colors">
           <div className="w-5 h-5 flex items-center justify-center">🏠</div>
         </Link>
-        <div className="flex items-center px-4 space-x-2">
-          <Link to="/" className="px-5 py-4 text-xs font-semibold text-slate-200 hover:text-white hover:bg-white/5 transition-all flex items-center gap-1">
-            Home <span className="opacity-40 ml-1">⌄</span>
-          </Link>
-          <Link to="/dashboard" className="px-5 py-4 text-xs font-semibold text-slate-200 hover:text-white hover:bg-white/5 transition-all flex items-center gap-1">
-            Programmes <span className="opacity-40 ml-1">⌄</span>
-          </Link>
-          <Link to="/resources" className="px-5 py-4 text-xs font-semibold text-yellow-400 hover:text-yellow-300 hover:bg-white/5 transition-all flex items-center gap-1">
-            Resources <span className="opacity-40 ml-1">⌄</span>
-          </Link>
-          <Link to="/bookings" className="px-5 py-4 text-xs font-semibold text-slate-200 hover:text-white hover:bg-white/5 transition-all flex items-center gap-1">
-            My Bookings <span className="opacity-40 ml-1">⌄</span>
-          </Link>
-          <Link to="/incidents" className="px-5 py-4 text-xs font-semibold text-slate-200 hover:text-white hover:bg-white/5 transition-all flex items-center gap-1">
-             Support <span className="opacity-40 ml-1">⌄</span>
-          </Link>
+        <div
+          className={[
+            'flex items-center px-4 space-x-2',
+            currentUser?.role !== 'ADMIN' ? 'overflow-x-auto no-scrollbar' : '',
+          ].join(' ')}
+        >
+          {currentUser?.role === 'ADMIN' ? (
+            <div className="relative" ref={opsMenuRef}>
+              <button
+                type="button"
+                onClick={() => setOpsOpen((v) => !v)}
+                className={[
+                  'px-5 py-4 text-xs font-semibold transition-all flex items-center gap-1',
+                  opsOpen ? 'text-white bg-white/10' : 'text-slate-200 hover:text-white hover:bg-white/5',
+                ].join(' ')}
+                aria-haspopup="menu"
+                aria-expanded={opsOpen}
+              >
+                Operations <span className={['opacity-40 ml-1 transition-transform', opsOpen ? 'rotate-180' : ''].join(' ')}>⌄</span>
+              </button>
+
+              {opsOpen ? (
+                <div
+                  role="menu"
+                  className="absolute left-0 top-full mt-1 w-[340px] bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden z-[9999]"
+                  onMouseDown={(e) => e.stopPropagation()}
+                >
+                  <div className="px-5 py-3 bg-slate-50/60 border-b border-slate-100">
+                    <p className="sc-label text-slate-600">Admin shortcuts</p>
+                  </div>
+                  <div className="py-2">
+                    {opsItems.map((it) => (
+                      <Link
+                        key={it.to}
+                        to={it.to}
+                        role="menuitem"
+                        onClick={() => setOpsOpen(false)}
+                        className="block px-5 py-3 hover:bg-sliit-light/70 transition-colors"
+                      >
+                        <p className="font-semibold text-slate-800">{it.label}</p>
+                        <p className="sc-meta text-slate-500">{it.desc}</p>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            <Link to="/dashboard" className="px-5 py-4 text-xs font-semibold text-slate-200 hover:text-white hover:bg-white/5 transition-all flex items-center gap-1">
+              Dashboard <span className="opacity-40 ml-1">⌄</span>
+            </Link>
+          )}
+          {currentUser?.role !== 'ADMIN' ? (
+            <>
+              <Link to="/resources" className="px-5 py-4 text-xs font-semibold text-yellow-400 hover:text-yellow-300 hover:bg-white/5 transition-all flex items-center gap-1">
+                Resources <span className="opacity-40 ml-1">⌄</span>
+              </Link>
+              <Link to="/bookings" className="px-5 py-4 text-xs font-semibold text-slate-200 hover:text-white hover:bg-white/5 transition-all flex items-center gap-1">
+                My Bookings <span className="opacity-40 ml-1">⌄</span>
+              </Link>
+              <Link to="/incidents" className="px-5 py-4 text-xs font-semibold text-slate-200 hover:text-white hover:bg-white/5 transition-all flex items-center gap-1">
+                 Support <span className="opacity-40 ml-1">⌄</span>
+              </Link>
+            </>
+          ) : null}
         </div>
       </nav>
     </header>
@@ -120,28 +198,33 @@ const Dashboard = () => {
   const AdminPanel = (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
       <Link to="/facilities" className="block outline-none">
-        <div className="bg-sliit-navy text-white p-8 rounded-lg shadow-lg hover:shadow-xl transition-all h-full relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-bl-full opacity-5 transform translate-x-8 -translate-y-8"></div>
-          <h2 className="sc-card-title mb-2 text-sliit-orange">Manage Catalogue</h2>
-          <p className="text-slate-300 sc-meta">Create brand new campus resources and modify inventory capacities dynamically.</p>
+        <div className="bg-white p-8 rounded-lg shadow hover:shadow-xl transition-all border-t-4 border-slate-200 hover:border-sliit-orange h-full hover:bg-sliit-navy group">
+          <h2 className="sc-card-title mb-2 text-sliit-blue group-hover:text-sliit-orange">Manage Catalogue</h2>
+          <p className="sc-meta group-hover:text-slate-200">Create brand new campus resources and modify inventory capacities dynamically.</p>
         </div>
       </Link>
       <Link to="/bookings" className="block outline-none">
-        <div className="bg-white p-8 rounded-lg shadow hover:shadow-lg transition-all border-t-4 border-sliit-orange h-full">
-          <h2 className="sc-card-title mb-2 text-sliit-blue">Booking Queue</h2>
-          <p className="sc-meta">Review, approve, or reject incoming reservations requested by Students & Staff.</p>
+        <div className="bg-white p-8 rounded-lg shadow hover:shadow-xl transition-all border-t-4 border-slate-200 hover:border-sliit-orange h-full hover:bg-sliit-navy group">
+          <h2 className="sc-card-title mb-2 text-sliit-blue group-hover:text-sliit-orange">Booking Queue</h2>
+          <p className="sc-meta group-hover:text-slate-200">Review, approve, or reject incoming reservations requested by Students & Staff.</p>
         </div>
       </Link>
       <Link to="/incidents" className="block outline-none">
-        <div className="bg-white p-8 rounded-lg shadow hover:shadow-lg transition-all border-t-4 border-slate-700 h-full">
-          <h2 className="sc-card-title mb-2 text-sliit-blue">System Triage</h2>
-          <p className="sc-meta">Assign maintenance technicians to open operational tickets facility-wide.</p>
+        <div className="bg-white p-8 rounded-lg shadow hover:shadow-xl transition-all border-t-4 border-slate-200 hover:border-sliit-orange h-full hover:bg-sliit-navy group">
+          <h2 className="sc-card-title mb-2 text-sliit-blue group-hover:text-sliit-orange">System Triage</h2>
+          <p className="sc-meta group-hover:text-slate-200">Assign maintenance technicians to open operational tickets facility-wide.</p>
         </div>
       </Link>
       <Link to="/admin/notifications" className="block outline-none">
-        <div className="bg-white p-8 rounded-lg shadow hover:shadow-lg transition-all border-t-4 border-sliit-orange h-full">
-          <h2 className="sc-card-title mb-2 text-sliit-blue">Manage Notifications</h2>
-          <p className="sc-meta">Broadcast campus-wide announcements and audit all system-generated alerts.</p>
+        <div className="bg-white p-8 rounded-lg shadow hover:shadow-xl transition-all border-t-4 border-slate-200 hover:border-sliit-orange h-full hover:bg-sliit-navy group">
+          <h2 className="sc-card-title mb-2 text-sliit-blue group-hover:text-sliit-orange">Manage Notifications</h2>
+          <p className="sc-meta group-hover:text-slate-200">Broadcast campus-wide announcements and audit all system-generated alerts.</p>
+        </div>
+      </Link>
+      <Link to="/admin/facilities-analytics" className="block outline-none">
+        <div className="bg-white p-8 rounded-lg shadow hover:shadow-xl transition-all border-t-4 border-slate-200 hover:border-sliit-orange h-full hover:bg-sliit-navy group">
+          <h2 className="sc-card-title mb-2 text-sliit-blue group-hover:text-sliit-orange">Facilities Analytics</h2>
+          <p className="sc-meta group-hover:text-slate-200">See top resources, peak booking hours, and a utilization score.</p>
         </div>
       </Link>
     </div>
@@ -177,7 +260,7 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <div className="min-h-screen bg-sliit-light font-sans text-slate-800">
+        <div className="min-h-screen bg-transparent font-sans text-slate-800">
           <Routes>
             {/* Direct Public Access (No Navbar wrapper needed for Home/Login/Register) */}
             <Route path="/" element={<HomePage />} />
@@ -190,8 +273,10 @@ function App() {
             <Route element={
               <>
                 <Navbar />
-                <main className="max-w-7xl mx-auto py-6">
-                  <Outlet />
+                <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+                  <div className="bg-white border border-slate-200/70 rounded-3xl shadow-sm">
+                    <Outlet />
+                  </div>
                 </main>
               </>
             }>
@@ -205,6 +290,7 @@ function App() {
                 <Route path="/bookings" element={<BookingsDashboard />} />
                 <Route path="/incidents" element={<IncidentsDashboard />} />
                 <Route path="/admin/notifications" element={<AdminNotifications />} />
+                <Route path="/admin/facilities-analytics" element={<AdminFacilitiesAnalytics />} />
               </Route>
             </Route>
 

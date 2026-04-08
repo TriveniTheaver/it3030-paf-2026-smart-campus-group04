@@ -13,9 +13,8 @@ export default function HomePage() {
 
 
   const heroImages = [
-    '/assets/images/hero-1.png',
-    '/assets/images/hero-2.png',
-    '/assets/images/hero-3.png'
+    '/images/hero/hero-1.png',
+    '/images/hero/hero-2.png',
   ];
   const heroImagesLength = heroImages.length;
 
@@ -39,19 +38,20 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans animate-in fade-in duration-700">
+    <div className="min-h-screen bg-transparent flex flex-col font-sans animate-in fade-in duration-700">
       {/* Navbar Overlay Base - Matching official white header */}
       <nav className="bg-white border-b border-slate-100 px-8 py-5 flex justify-between items-center text-sliit-blue relative z-20 shadow-sm">
-        <div className="flex items-center gap-4 cursor-pointer group" onClick={() => navigate('/')}>
-          <div className="flex flex-col">
-            <span className="text-sliit-blue sc-brand leading-none">SLIIT UNI</span>
-            <span className="text-xs font-medium text-slate-500 mt-1 leading-none">The Knowledge University</span>
+        <div className="flex items-center gap-5 cursor-pointer group" onClick={() => navigate('/')}>
+          <div className="flex items-start gap-4">
+            <div className="flex flex-col">
+              <span className="text-sliit-blue sc-brand leading-none">SLIIT UNI</span>
+              <span className="text-xs font-medium text-slate-500 mt-1 leading-none">The Knowledge University</span>
+            </div>
+            <div className="h-12 w-px bg-slate-400/70" />
+            <span className="text-sliit-blue sc-brand leading-none pt-[1px]">SmartCampus Hub</span>
           </div>
-          <div className="h-8 w-px bg-slate-200 mx-2"></div>
-          <span className="text-sliit-blue sc-brand">SmartCampus Hub</span>
         </div>
         <div className="flex items-center gap-8">
-           <Link to="/resources" className="text-xs font-semibold text-slate-600 hover:text-sliit-blue transition-colors">Resources</Link>
            {currentUser ? (
               <div className="flex items-center gap-4">
                 <span className="text-xs font-medium text-sliit-blue">Hi, {currentUser.name}</span>
@@ -64,7 +64,7 @@ export default function HomePage() {
       </nav>
 
       {/* Hero Section with Dynamic Carousel */}
-      <div className="relative h-[650px] overflow-hidden">
+      <div className="relative h-[640px] overflow-hidden">
         {heroImages.map((img, idx) => (
           <div
             key={idx}
@@ -74,7 +74,7 @@ export default function HomePage() {
               className="absolute inset-0 bg-cover bg-center transition-transform duration-[10s] ease-linear scale-100"
               style={{ 
                 backgroundImage: `url(${img})`,
-                transform: idx === currentImageIndex ? 'scale(1.1)' : 'scale(1)'
+                transform: idx === currentImageIndex ? 'scale(1.05)' : 'scale(1)'
               }}
             />
             <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent"></div>
@@ -83,11 +83,11 @@ export default function HomePage() {
         
         <div className="relative h-full max-w-7xl mx-auto px-8 flex flex-col justify-center items-start">
           <div className="max-w-2xl animate-in slide-in-from-left duration-1000">
-            <h1 className="text-sliit-navy mb-4 leading-none text-6xl font-extrabold tracking-tight">
+            <h1 className="text-sliit-navy mb-5 leading-none text-7xl font-extrabold tracking-tight">
               EVOLVE BEYOND
             </h1>
             <div className="w-28 h-2 bg-sliit-orange mb-8"></div>
-            <p className="sc-body text-slate-700 mb-10 leading-relaxed">
+            <p className="text-lg font-medium text-slate-700 mb-10 leading-relaxed max-w-xl">
               Access the official SLIIT facility management gateway.<br/>
               Securely book resources, track campus activities, and<br/>
               report incidents with real-time transparency.
@@ -95,14 +95,14 @@ export default function HomePage() {
             <div className="flex gap-4">
               <Link 
                 to="/resources" 
-                className="px-10 py-5 bg-sliit-navy text-white rounded-2xl font-semibold hover:bg-sliit-blue transition-all shadow-2xl flex items-center gap-3 group text-sm"
+                className="px-11 py-5 bg-sliit-navy text-white rounded-2xl font-semibold hover:bg-sliit-blue transition-all shadow-2xl flex items-center gap-3 group text-base"
               >
                 Browse Assets <ArrowRight className="group-hover:translate-x-2 transition-transform" />
               </Link>
               {!currentUser && (
                 <Link 
                   to="/login" 
-                  className="px-10 py-5 bg-white text-sliit-navy border-2 border-slate-100 rounded-2xl font-semibold hover:bg-slate-50 transition-all flex items-center gap-3 text-sm"
+                  className="px-11 py-5 bg-white text-sliit-navy border-2 border-slate-100 rounded-2xl font-semibold hover:bg-slate-50 transition-all flex items-center gap-3 text-base"
                 >
                   SLIIT Login
                 </Link>
