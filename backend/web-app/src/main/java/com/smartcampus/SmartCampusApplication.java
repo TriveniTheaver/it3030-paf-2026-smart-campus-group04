@@ -104,6 +104,28 @@ public class SmartCampusApplication {
                         .createdAt(LocalDateTime.now().minusHours(2))
                         .build();
                 ticketRepo.save(t);
+
+                Booking pendingBooking = Booking.builder()
+                        .user(student)
+                        .resource(r1)
+                        .startTime(LocalDateTime.now().plusDays(3).withHour(14).withMinute(0))
+                        .endTime(LocalDateTime.now().plusDays(3).withHour(16).withMinute(0))
+                        .purpose("Group Project Discussion")
+                        .expectedAttendees(5)
+                        .status(BookingStatus.PENDING)
+                        .build();
+                bookingRepo.save(pendingBooking);
+
+                Booking pendingBooking2 = Booking.builder()
+                        .user(student)
+                        .resource(r2)
+                        .startTime(LocalDateTime.now().plusDays(4).withHour(9).withMinute(0))
+                        .endTime(LocalDateTime.now().plusDays(4).withHour(11).withMinute(0))
+                        .purpose("Software Testing Session")
+                        .expectedAttendees(2)
+                        .status(BookingStatus.PENDING)
+                        .build();
+                bookingRepo.save(pendingBooking2);
             }
         };
     }

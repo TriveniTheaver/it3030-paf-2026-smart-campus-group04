@@ -7,6 +7,14 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+      </profile>
+      <profile name="Annotation profile for Smart Campus Operations Hub" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.34/lombok-1.18.34.jar" />
+        </processorPath>
         <module name="incidents-module" />
         <module name="web-app" />
         <module name="facilities-module" />
@@ -21,6 +29,7 @@
       <module name="core-module" options="-parameters" />
       <module name="facilities-module" options="-parameters" />
       <module name="incidents-module" options="-parameters" />
+      <module name="smartcampus-parent" options="-parameters" />
       <module name="web-app" options="-parameters" />
     </option>
   </component>
