@@ -21,7 +21,7 @@ export default function RegisterPage() {
     try {
       await register(name, email, password, requestedRole);
       navigate('/');
-    } catch (err) {
+    } catch {
       setError('Registration failed. The email might already be in use.');
     }
     setLoading(false);
@@ -32,8 +32,8 @@ export default function RegisterPage() {
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden p-8">
         
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-sliit-navy mb-2">Create Account</h1>
-          <p className="text-slate-500">Join the SLIIT Operations Hub</p>
+          <h1 className="sc-page-title text-sliit-navy mb-2">Create Account</h1>
+          <p className="sc-meta">Join the SLIIT Operations Hub</p>
         </div>
 
         {error && (
@@ -102,14 +102,14 @@ export default function RegisterPage() {
 
           <button 
             type="submit" disabled={loading}
-            className={`w-full py-3 px-4 rounded-lg font-bold text-white flex justify-center items-center gap-2 transition-all bg-sliit-blue hover:bg-sliit-navy shadow ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+            className={`w-full py-3 px-4 rounded-lg font-semibold text-white flex justify-center items-center gap-2 transition-all bg-sliit-blue hover:bg-sliit-navy shadow ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
           >
             {loading ? 'Creating Account...' : <><CheckCircle2 className="w-5 h-5" /> Register Now</>}
           </button>
         </form>
 
         <div className="mt-8 text-center text-sm text-slate-500 border-t border-slate-100 pt-6">
-          Already have an account? <Link to="/login" className="font-bold text-sliit-orange hover:underline transition-colors">Sign in here</Link>
+          Already have an account? <Link to="/login" className="sc-link text-sliit-orange hover:underline transition-colors">Sign in here</Link>
         </div>
         
       </div>

@@ -56,8 +56,8 @@ export default function AdminNotifications() {
           <Bell size={32} />
         </div>
         <div>
-          <h1 className="text-3xl font-black text-sliit-navy">System Notifications</h1>
-          <p className="text-slate-500 font-bold">Administrative Oversight & Campus-Wide Broadcasting</p>
+          <h1 className="sc-page-title text-sliit-navy">System Notifications</h1>
+          <p className="sc-meta">Administrative oversight and campus-wide broadcasting</p>
         </div>
       </div>
 
@@ -65,14 +65,14 @@ export default function AdminNotifications() {
         {/* Broadcast Panel */}
         <div className="lg:col-span-1">
           <div className="bg-white p-8 rounded-[2rem] shadow-xl border border-slate-100 sticky top-8">
-            <h2 className="text-xl font-black text-sliit-blue mb-6 flex items-center gap-2">
+            <h2 className="sc-section-title text-sliit-blue mb-6 flex items-center gap-2">
               <Send size={20} className="text-sliit-orange" /> Broadcast Update
             </h2>
             <form onSubmit={handleBroadcast} className="space-y-6">
               <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Broadcast Message</label>
+                <label className="block sc-label mb-3">Broadcast message</label>
                 <textarea 
-                  className="w-full p-5 bg-slate-50 border-2 border-transparent focus:border-sliit-orange rounded-2xl outline-none transition-all resize-none min-h-[150px] font-bold text-slate-700"
+                  className="w-full p-5 bg-slate-50 border-2 border-transparent focus:border-sliit-orange rounded-2xl outline-none transition-all resize-none min-h-[150px] font-semibold text-slate-700"
                   placeholder="Type important announcement here..."
                   value={broadcastMessage}
                   onChange={(e) => setBroadcastMessage(e.target.value)}
@@ -82,14 +82,14 @@ export default function AdminNotifications() {
               <button 
                 type="submit"
                 disabled={sending || !broadcastMessage.trim()}
-                className={`w-full py-4 rounded-2xl font-black text-white shadow-lg transition-all flex items-center justify-center gap-3 ${sending || !broadcastMessage.trim() ? 'bg-slate-300' : 'bg-sliit-orange hover:bg-orange-600 active:scale-95'}`}
+                className={`w-full py-4 rounded-2xl font-semibold text-sm text-white shadow-lg transition-all flex items-center justify-center gap-3 ${sending || !broadcastMessage.trim() ? 'bg-slate-300' : 'bg-sliit-orange hover:bg-orange-600 active:scale-95'}`}
               >
                 {sending ? 'Broadcasting...' : 'Dispatch Alert'}
                 <Send size={18} />
               </button>
             </form>
             {success && (
-              <div className="mt-6 p-4 bg-emerald-50 text-emerald-600 rounded-xl flex items-center gap-3 border border-emerald-100 font-bold text-sm animate-in slide-in-from-top scale-95">
+              <div className="mt-6 p-4 bg-emerald-50 text-emerald-600 rounded-xl flex items-center gap-3 border border-emerald-100 font-semibold text-sm animate-in slide-in-from-top scale-95">
                 <CheckCircle size={18} /> {success}
               </div>
             )}
@@ -100,13 +100,13 @@ export default function AdminNotifications() {
         <div className="lg:col-span-2">
           <div className="bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden">
             <div className="p-8 border-b border-slate-50 bg-slate-50/50">
-              <h2 className="text-xl font-black text-sliit-navy">Live Notification Stream</h2>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Auditing all generated alerts system-wide</p>
+              <h2 className="sc-section-title text-sliit-navy">Live notification stream</h2>
+              <p className="sc-label mt-1">All generated alerts system-wide</p>
             </div>
             
             <div className="divide-y divide-slate-50 max-h-[700px] overflow-y-auto no-scrollbar">
               {loading ? (
-                <div className="p-20 text-center text-slate-300 font-bold italic">Gathering alert data...</div>
+                <div className="p-20 text-center sc-meta text-slate-300">Gathering alert data…</div>
               ) : notifications.length > 0 ? (
                 notifications.map((notif) => (
                   <div key={notif.id} className="p-6 hover:bg-slate-50 transition-colors group flex items-start justify-between gap-4">
@@ -115,11 +115,11 @@ export default function AdminNotifications() {
                         <ShieldAlert size={16} />
                       </div>
                       <div>
-                        <p className="font-bold text-slate-800 leading-snug">{notif.message}</p>
+                        <p className="font-semibold text-slate-800 leading-snug">{notif.message}</p>
                         <div className="flex items-center gap-3 mt-2">
-                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Recipient: {notif.recipient?.name}</span>
+                          <span className="sc-label">Recipient: {notif.recipient?.name}</span>
                           <span className="h-1 w-1 bg-slate-200 rounded-full"></span>
-                          <span className="text-[10px] font-black text-slate-300 uppercase tracking-tighter">
+                          <span className="sc-label text-slate-400">
                             {new Date(notif.createdAt).toLocaleString()}
                           </span>
                         </div>
@@ -134,7 +134,7 @@ export default function AdminNotifications() {
                   </div>
                 ))
               ) : (
-                <div className="p-20 text-center text-slate-400 font-bold">No notifications recorded in history.</div>
+                <div className="p-20 text-center sc-meta text-slate-400">No notifications recorded in history.</div>
               )}
             </div>
           </div>

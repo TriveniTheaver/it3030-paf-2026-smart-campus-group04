@@ -23,42 +23,42 @@ const Navbar = () => {
       <div className="bg-white px-8 py-6 flex justify-between items-center shadow-sm">
         <div className="flex items-center gap-4 cursor-pointer group" onClick={() => navigate('/')}>
           <div className="flex flex-col">
-            <span className="text-sliit-blue font-black text-3xl tracking-tighter leading-none">SLIIT UNI</span>
-            <span className="text-[8px] uppercase tracking-[0.3em] font-bold text-slate-400 mt-1">The Knowledge University</span>
+            <span className="text-sliit-blue sc-brand leading-none">SLIIT UNI</span>
+            <span className="text-xs font-medium text-slate-500 mt-1 leading-none">The Knowledge University</span>
           </div>
           <div className="h-10 w-px bg-slate-200 mx-2"></div>
-          <span className="text-sliit-blue font-serif text-3xl italic">SmartCampus Hub</span>
+          <span className="text-sliit-blue sc-brand">SmartCampus Hub</span>
         </div>
         
         <div className="flex items-center gap-6">
           {currentUser ? (
             <div className="flex items-center gap-4">
               <div className="text-right hidden sm:block">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Logged in as</p>
-                <p className="text-sm font-black text-sliit-blue">{currentUser.name}</p>
+                <p className="text-xs font-medium text-slate-500">Logged in as</p>
+                <p className="sc-body text-sliit-blue">{currentUser.name}</p>
               </div>
               <div className="h-10 w-10 bg-sliit-light rounded-full flex items-center justify-center border-2 border-sliit-orange shadow-inner">
-                <span className="font-black text-sliit-blue">{currentUser.name.charAt(0)}</span>
+                <span className="font-semibold text-sliit-blue">{currentUser.name.charAt(0)}</span>
               </div>
               <NotificationPanel />
               <button 
                 onClick={() => { logout(); navigate('/login'); }} 
-                className="text-xs font-black text-sliit-orange hover:text-orange-600 underline decoration-2 underline-offset-4 uppercase tracking-tighter"
+                className="text-xs font-semibold text-sliit-orange hover:text-orange-600 underline decoration-2 underline-offset-4"
               >
                 Logout
               </button>
             </div>
           ) : (
             <div className="flex flex-col items-end">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Log in using your account on:</span>
+              <span className="text-xs font-medium text-slate-500 mb-1">Log in using your account on:</span>
               <button 
                 onClick={() => navigate('/login')} 
-                className="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded border border-slate-200 font-bold text-xs flex items-center gap-2 transition-all shadow-sm"
+                className="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded border border-slate-200 font-semibold text-xs flex items-center gap-2 transition-all shadow-sm"
               >
                 <div className="w-4 h-4 bg-sliit-orange rounded-sm"></div>
                 SLIIT Login
               </button>
-              <Link to="/forgot-password" size="sm" className="text-[10px] text-sliit-orange font-bold mt-1 hover:underline">Forgotten your password?</Link>
+              <Link to="/forgot-password" className="sc-link text-sliit-orange mt-1 hover:underline">Forgotten your password?</Link>
             </div>
           )}
         </div>
@@ -70,19 +70,19 @@ const Navbar = () => {
           <div className="w-5 h-5 flex items-center justify-center">🏠</div>
         </Link>
         <div className="flex items-center px-4 space-x-2">
-          <Link to="/" className="px-5 py-4 text-xs font-bold text-slate-200 hover:text-white hover:bg-white/5 transition-all flex items-center gap-1 uppercase tracking-wider">
+          <Link to="/" className="px-5 py-4 text-xs font-semibold text-slate-200 hover:text-white hover:bg-white/5 transition-all flex items-center gap-1">
             Home <span className="opacity-40 ml-1">⌄</span>
           </Link>
-          <Link to="/dashboard" className="px-5 py-4 text-xs font-bold text-slate-200 hover:text-white hover:bg-white/5 transition-all flex items-center gap-1 uppercase tracking-wider">
+          <Link to="/dashboard" className="px-5 py-4 text-xs font-semibold text-slate-200 hover:text-white hover:bg-white/5 transition-all flex items-center gap-1">
             Programmes <span className="opacity-40 ml-1">⌄</span>
           </Link>
-          <Link to="/resources" className="px-5 py-4 text-xs font-bold text-yellow-400 hover:text-yellow-300 hover:bg-white/5 transition-all flex items-center gap-1 uppercase tracking-wider">
+          <Link to="/resources" className="px-5 py-4 text-xs font-semibold text-yellow-400 hover:text-yellow-300 hover:bg-white/5 transition-all flex items-center gap-1">
             Resources <span className="opacity-40 ml-1">⌄</span>
           </Link>
-          <Link to="/bookings" className="px-5 py-4 text-xs font-bold text-slate-200 hover:text-white hover:bg-white/5 transition-all flex items-center gap-1 uppercase tracking-wider">
+          <Link to="/bookings" className="px-5 py-4 text-xs font-semibold text-slate-200 hover:text-white hover:bg-white/5 transition-all flex items-center gap-1">
             My Bookings <span className="opacity-40 ml-1">⌄</span>
           </Link>
-          <Link to="/incidents" className="px-5 py-4 text-xs font-bold text-slate-200 hover:text-white hover:bg-white/5 transition-all flex items-center gap-1 uppercase tracking-wider">
+          <Link to="/incidents" className="px-5 py-4 text-xs font-semibold text-slate-200 hover:text-white hover:bg-white/5 transition-all flex items-center gap-1">
              Support <span className="opacity-40 ml-1">⌄</span>
           </Link>
         </div>
@@ -98,20 +98,20 @@ const Dashboard = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       <Link to="/facilities" className="block outline-none">
         <div className="bg-white p-8 rounded-lg shadow hover:shadow-lg transition-all border-t-4 border-sliit-navy h-full">
-          <h2 className="font-bold text-xl mb-2 text-sliit-blue">Browse & Book Resources</h2>
-          <p className="text-slate-500">Request access to lecture halls, meeting rooms, or equipment.</p>
+          <h2 className="sc-card-title mb-2 text-sliit-blue">Browse & Book Resources</h2>
+          <p className="sc-meta">Request access to lecture halls, meeting rooms, or equipment.</p>
         </div>
       </Link>
       <Link to="/bookings" className="block outline-none">
         <div className="bg-white p-8 rounded-lg shadow hover:shadow-lg transition-all border-t-4 border-sliit-orange h-full">
-          <h2 className="font-bold text-xl mb-2 text-sliit-blue">My Active Bookings</h2>
-          <p className="text-slate-500">Manage and view your accepted/pending campus reservations.</p>
+          <h2 className="sc-card-title mb-2 text-sliit-blue">My Active Bookings</h2>
+          <p className="sc-meta">Manage and view your accepted/pending campus reservations.</p>
         </div>
       </Link>
       <Link to="/incidents" className="block outline-none md:col-span-2">
         <div className="bg-white p-8 rounded-lg shadow hover:shadow-lg transition-all border-t-4 border-slate-700 h-full">
-          <h2 className="font-bold text-xl mb-2 text-sliit-blue">Report an Incident</h2>
-          <p className="text-slate-500">Log tickets for damaged hardware or facility maintenance requests.</p>
+          <h2 className="sc-card-title mb-2 text-sliit-blue">Report an Incident</h2>
+          <p className="sc-meta">Log tickets for damaged hardware or facility maintenance requests.</p>
         </div>
       </Link>
     </div>
@@ -122,26 +122,26 @@ const Dashboard = () => {
       <Link to="/facilities" className="block outline-none">
         <div className="bg-sliit-navy text-white p-8 rounded-lg shadow-lg hover:shadow-xl transition-all h-full relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-bl-full opacity-5 transform translate-x-8 -translate-y-8"></div>
-          <h2 className="font-bold text-xl mb-2 text-sliit-orange">Manage Catalogue</h2>
-          <p className="text-slate-300 text-sm">Create brand new campus resources and modify inventory capacities dynamically.</p>
+          <h2 className="sc-card-title mb-2 text-sliit-orange">Manage Catalogue</h2>
+          <p className="text-slate-300 sc-meta">Create brand new campus resources and modify inventory capacities dynamically.</p>
         </div>
       </Link>
       <Link to="/bookings" className="block outline-none">
         <div className="bg-white p-8 rounded-lg shadow hover:shadow-lg transition-all border-t-4 border-sliit-orange h-full">
-          <h2 className="font-bold text-xl mb-2 text-sliit-blue">Booking Queue</h2>
-          <p className="text-slate-500 text-sm">Review, approve, or reject incoming reservations requested by Students & Staff.</p>
+          <h2 className="sc-card-title mb-2 text-sliit-blue">Booking Queue</h2>
+          <p className="sc-meta">Review, approve, or reject incoming reservations requested by Students & Staff.</p>
         </div>
       </Link>
       <Link to="/incidents" className="block outline-none">
         <div className="bg-white p-8 rounded-lg shadow hover:shadow-lg transition-all border-t-4 border-slate-700 h-full">
-          <h2 className="font-bold text-xl mb-2 text-sliit-blue">System Triage</h2>
-          <p className="text-slate-500 text-sm">Assign maintenance technicians to open operational tickets facility-wide.</p>
+          <h2 className="sc-card-title mb-2 text-sliit-blue">System Triage</h2>
+          <p className="sc-meta">Assign maintenance technicians to open operational tickets facility-wide.</p>
         </div>
       </Link>
       <Link to="/admin/notifications" className="block outline-none">
         <div className="bg-white p-8 rounded-lg shadow hover:shadow-lg transition-all border-t-4 border-sliit-orange h-full">
-          <h2 className="font-bold text-xl mb-2 text-sliit-blue">Manage Notifications</h2>
-          <p className="text-slate-500 text-sm">Broadcast campus-wide announcements and audit all system-generated alerts.</p>
+          <h2 className="sc-card-title mb-2 text-sliit-blue">Manage Notifications</h2>
+          <p className="sc-meta">Broadcast campus-wide announcements and audit all system-generated alerts.</p>
         </div>
       </Link>
     </div>
@@ -151,9 +151,9 @@ const Dashboard = () => {
     <div className="max-w-2xl mx-auto">
       <Link to="/incidents" className="block outline-none">
         <div className="bg-white p-8 rounded-xl shadow-lg border-2 border-slate-700 hover:border-sliit-orange transition-colors">
-          <h2 className="font-bold text-2xl mb-4 text-sliit-blue text-center">Open Service Console</h2>
-          <p className="text-slate-500 text-center mb-6">Review your assigned maintenance tickets, add operational logs, and resolve ongoing hardware or structural facility incidents.</p>
-          <div className="w-full py-3 bg-slate-800 text-white rounded font-bold text-center">Launch Job Queue</div>
+          <h2 className="sc-section-title mb-4 text-sliit-blue text-center">Open Service Console</h2>
+          <p className="sc-meta text-center mb-6">Review your assigned maintenance tickets, add operational logs, and resolve ongoing hardware or structural facility incidents.</p>
+          <div className="w-full py-3 bg-slate-800 text-white rounded font-semibold text-center text-sm">Launch Job Queue</div>
         </div>
       </Link>
     </div>
@@ -161,7 +161,7 @@ const Dashboard = () => {
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-extrabold mb-8 text-slate-800">
+      <h1 className="sc-page-title mb-8 text-slate-800">
         {currentUser?.role === 'ADMIN' && 'Central Command Overview'}
         {currentUser?.role === 'TECHNICIAN' && 'Technician Workflow'}
         {currentUser?.role === 'USER' && 'Campus Services Portal'}

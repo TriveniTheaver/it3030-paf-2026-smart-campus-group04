@@ -17,7 +17,7 @@ export default function ForgotPasswordPage() {
         headers: { 'Content-Type': 'text/plain' }
       });
       setSubmitted(true);
-    } catch (err) {
+    } catch {
       // In a security-conscious enterprise application, we always report success
       // to prevent email enumeration attacks.
       setSubmitted(true);
@@ -33,10 +33,10 @@ export default function ForgotPasswordPage() {
           <div className="w-16 h-16 bg-blue-50 text-sliit-blue rounded-full flex items-center justify-center mx-auto mb-4">
             {submitted ? <CheckCircle2 className="w-8 h-8" /> : <Mail className="w-8 h-8" />}
           </div>
-          <h1 className="text-3xl font-bold text-sliit-navy mb-2">
+          <h1 className="sc-page-title text-sliit-navy mb-2">
             {submitted ? 'Check Your Email' : 'Forgot Password?'}
           </h1>
-          <p className="text-slate-500">
+          <p className="sc-meta">
             {submitted 
               ? 'If an account exists with that email, we have sent a password reset link.' 
               : 'Enter your registered email address and we\'ll send you a link to reset your password.'}
@@ -61,7 +61,7 @@ export default function ForgotPasswordPage() {
 
             <button 
               type="submit" disabled={loading}
-              className={`w-full py-3 px-4 rounded-lg font-bold text-white bg-sliit-orange hover:bg-orange-600 transition-all shadow ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`w-full py-3 px-4 rounded-lg font-semibold text-white bg-sliit-orange hover:bg-orange-600 transition-all shadow ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
               {loading ? 'Sending...' : 'Send Reset Link'}
             </button>
@@ -69,7 +69,7 @@ export default function ForgotPasswordPage() {
         )}
 
         <div className="mt-8 text-center text-sm">
-          <Link to="/login" className="font-bold text-slate-500 hover:text-sliit-navy transition-colors flex items-center justify-center gap-2">
+          <Link to="/login" className="sc-link text-slate-500 hover:text-sliit-navy transition-colors flex items-center justify-center gap-2">
             <ArrowLeft className="w-4 h-4" /> Back to Login
           </Link>
         </div>
