@@ -13,9 +13,11 @@ import com.smartcampus.incidents.model.TicketStatus;
 import com.smartcampus.incidents.repository.CommentRepository;
 import com.smartcampus.incidents.repository.TicketRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -192,5 +194,42 @@ public class TicketService {
         }
 
         return savedComment;
+    }
+
+    @Transactional
+    public Comment updateComment(Long ticketId, Long commentId, String content, User actor) {
+        if (content == null || content.isBlank()) {
+            throw new IllegalArgumentException("Comment cannot be empty");
+        }
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("Comment not found"));
+        if (!comment.getTicket().getId().equals(ticketId)) {
+            throw new IllegalArgumentException("Comment does not belong to this ticket");
+        }
+        if (!canAccessTicket(actor, comment.getTicket())) {
+            throw new AccessDeniedException("You cannot access this ticket");
+        }
+        if (!comment.getAuthor().getId().equals(actor.getId())) {
+            throw new AccessDeniedException("Only the author can edit this comment");
+        }
+        comment.setContent(content.trim());
+        comment.setUpdatedAt(LocalDateTime.now());
+        return commentRepository.save(comment);
+    }
+
+    @Transactional
+    public void deleteComment(Long ticketId, Long commentId, User actor) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("Comment not found"));
+        if (!comment.getTicket().getId().equals(ticketId)) {
+            throw new IllegalArgumentException("Comment does not belong to this ticket");
+        }
+        if (!canAccessTicket(actor, comment.getTicket())) {
+            throw new AccessDeniedException("You cannot access this ticket");
+        }
+        if (!comment.getAuthor().getId().equals(actor.getId())) {
+            throw new AccessDeniedException("Only the author can delete this comment");
+        }
+        commentRepository.delete(comment);
     }
 }

@@ -31,6 +31,9 @@ public class Comment {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+    /** Set when the author edits the comment (shown in API as non-null). */
+    private LocalDateTime updatedAt;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
