@@ -87,6 +87,7 @@ const BookingsDashboard = () => {
     );
   };
 
+<<<<<<< HEAD
   const getCardColorTheme = (status) => {
     const themes = {
       APPROVED: 'border-b-[8px] border-b-emerald-500 border-r-[4px] border-r-emerald-600/20 shadow-emerald-500/10 hover:shadow-emerald-500/20',
@@ -97,6 +98,8 @@ const BookingsDashboard = () => {
     return themes[status] || themes.CANCELLED;
   };
 
+=======
+>>>>>>> c32c92f9dc63fcfca3486a7afcdc69125616fcff
   const renderCalendar = () => {
     if (currentUser?.role !== 'ADMIN') return null;
 
@@ -242,11 +245,22 @@ const BookingsDashboard = () => {
             </div>
           ) : (
             displayedBookings.map((booking) => (
+<<<<<<< HEAD
               <div key={booking.id} className={`bg-white/80 backdrop-blur-xl rounded-[2.5rem] p-10 border-t border-l border-white shadow-xl shadow-slate-300/40 flex flex-col xl:flex-row gap-10 items-start xl:items-center relative animate-in slide-in-from-bottom-4 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl group ${getCardColorTheme(booking.status)}`}>
 
                 <div className="flex-1 space-y-6">
                   <div className="flex flex-wrap items-center gap-5">
                     <h3 className="text-2xl font-black text-slate-900 tracking-tight group-hover:text-sliit-blue transition-colors">
+=======
+              <div
+                key={booking.id}
+                className="bg-white/90 backdrop-blur-xl rounded-lg p-10 border border-slate-100 border-t-4 border-t-slate-200 shadow-xl shadow-slate-300/30 flex flex-col xl:flex-row gap-10 items-start xl:items-center relative animate-in slide-in-from-bottom-4 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:border-t-sliit-orange hover:bg-sliit-navy group"
+              >
+
+                <div className="flex-1 space-y-6">
+                  <div className="flex flex-wrap items-center gap-5">
+                    <h3 className="text-2xl font-black text-sliit-blue tracking-tight group-hover:text-sliit-orange transition-colors">
+>>>>>>> c32c92f9dc63fcfca3486a7afcdc69125616fcff
                       {booking.resource?.name || 'Unknown Asset'}
                     </h3>
                     <StatusBadge status={booking.status} />
@@ -258,19 +272,33 @@ const BookingsDashboard = () => {
                   </div>
 
                   <div className="flex flex-col gap-2">
+<<<<<<< HEAD
                     <p className="text-slate-600 font-bold text-lg leading-snug">"{booking.purpose}"</p>
                     <p className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+=======
+                    <p className="text-slate-600 font-bold text-lg leading-snug group-hover:text-slate-200 transition-colors">"{booking.purpose}"</p>
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 group-hover:text-slate-400">
+>>>>>>> c32c92f9dc63fcfca3486a7afcdc69125616fcff
                       <History size={14} /> Expected Scale: {booking.expectedAttendees || 1} PAX
                     </p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+<<<<<<< HEAD
                     <div className="flex items-center gap-3 bg-white border-2 border-slate-100/80 px-6 py-4 rounded-2xl text-slate-700 font-black text-[13px] shadow-[0_4px_0_rgb(241,245,249)] transition-transform hover:-translate-y-1 group-hover:shadow-[0_6px_0_rgb(241,245,249)] w-full">
                       <CalendarIcon size={20} className="text-sliit-blue drop-shadow-sm shrink-0" />
                       <span className="truncate">{format(new Date(booking.startTime), 'EEEE, MMMM do')}</span>
                     </div>
                     <div className="flex items-center gap-3 bg-white border-2 border-slate-100/80 px-6 py-4 rounded-2xl text-slate-700 font-black text-[13px] shadow-[0_4px_0_rgb(241,245,249)] transition-transform hover:-translate-y-1 group-hover:shadow-[0_6px_0_rgb(241,245,249)] w-full">
                       <Clock size={20} className="text-emerald-500 drop-shadow-sm shrink-0" />
+=======
+                    <div className="flex items-center gap-3 bg-white border-2 border-slate-100/80 px-6 py-4 rounded-2xl text-slate-700 font-black text-[13px] shadow-[0_4px_0_rgb(241,245,249)] transition-all hover:-translate-y-0.5 group-hover:bg-white/10 group-hover:border-white/25 group-hover:text-slate-100 group-hover:shadow-none w-full">
+                      <CalendarIcon size={20} className="text-sliit-blue drop-shadow-sm shrink-0 group-hover:text-sliit-orange" />
+                      <span className="truncate">{format(new Date(booking.startTime), 'EEEE, MMMM do')}</span>
+                    </div>
+                    <div className="flex items-center gap-3 bg-white border-2 border-slate-100/80 px-6 py-4 rounded-2xl text-slate-700 font-black text-[13px] shadow-[0_4px_0_rgb(241,245,249)] transition-all hover:-translate-y-0.5 group-hover:bg-white/10 group-hover:border-white/25 group-hover:text-slate-100 group-hover:shadow-none w-full">
+                      <Clock size={20} className="text-emerald-500 drop-shadow-sm shrink-0 group-hover:text-sliit-orange" />
+>>>>>>> c32c92f9dc63fcfca3486a7afcdc69125616fcff
                       <span className="truncate">{format(new Date(booking.startTime), 'hh:mm a')} – {format(new Date(booking.endTime), 'hh:mm a')}</span>
                     </div>
                   </div>

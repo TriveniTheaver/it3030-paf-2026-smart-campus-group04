@@ -66,7 +66,6 @@ public class SmartCampusApplication {
                         .location("Block A, Level 1")
                         .availableFrom(LocalTime.of(8, 0))
                         .availableTo(LocalTime.of(20, 0))
-                        .imageUrl("https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=1200")
                         .status(ResourceStatus.ACTIVE)
                         .build();
                 r1 = resourceRepo.save(r1);
@@ -78,7 +77,6 @@ public class SmartCampusApplication {
                         .location("Block B, Level 3")
                         .availableFrom(LocalTime.of(9, 0))
                         .availableTo(LocalTime.of(18, 0))
-                        .imageUrl("https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=1200")
                         .status(ResourceStatus.ACTIVE)
                         .build();
                 r2 = resourceRepo.save(r2);
