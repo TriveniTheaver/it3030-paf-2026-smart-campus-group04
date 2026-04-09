@@ -25,7 +25,8 @@ public class BookingController {
     private BookingRepository bookingRepository;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('STUDENT', 'STAFF')")
+    // Student/staff accounts are represented as role USER in this system
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> createBooking(@RequestBody BookingRequest request, Principal principal) {
         try {
             Booking data = Booking.builder()
@@ -41,11 +42,13 @@ public class BookingController {
     }
 
     @GetMapping("/my")
+    @PreAuthorize("hasRole('USER')")
     public List<Booking> getMyBookings(Principal principal) {
         return bookingService.getMyBookings(principal.getName());
     }
 
     @PutMapping("/{id}/cancel")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> cancelBooking(@PathVariable Long id, Principal principal) {
         try {
             return ResponseEntity.ok(bookingService.cancelBooking(id, principal.getName()));

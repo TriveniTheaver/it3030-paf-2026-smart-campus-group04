@@ -28,6 +28,15 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen bg-sliit-light flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden p-8">
+
+        <div className="mb-6">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-sliit-navy transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back to Home
+          </Link>
+        </div>
         
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-blue-50 text-sliit-blue rounded-full flex items-center justify-center mx-auto mb-4">

@@ -64,9 +64,9 @@ const BookingModal = ({ isOpen, onClose, resource, onBookingSuccess }) => {
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md transition-all animate-in fade-in duration-300">
-      <div className="bg-white rounded-[3rem] w-full max-w-xl shadow-2xl overflow-hidden border border-slate-100 animate-in zoom-in-95 duration-300">
+      <div className="bg-white rounded-[3rem] w-full max-w-xl shadow-2xl overflow-hidden border border-slate-100 animate-in zoom-in-95 duration-300 max-h-[90vh] flex flex-col">
         {/* Modal Header */}
-        <div className="bg-slate-900 p-8 flex justify-between items-center text-white relative">
+        <div className="bg-slate-900 p-8 flex justify-between items-center text-white relative shrink-0">
           <div className="relative z-10">
             <h2 className="sc-section-title mb-1 text-white">Reserve space</h2>
             <p className="text-slate-400 text-sm font-medium">{resource.name}</p>
@@ -74,12 +74,9 @@ const BookingModal = ({ isOpen, onClose, resource, onBookingSuccess }) => {
           <button onClick={onClose} className="bg-white/10 hover:bg-white/20 p-3 rounded-2xl transition-all relative z-10">
             <X size={20} />
           </button>
-          <div className="absolute top-0 right-0 p-4 opacity-10">
-             <CalendarIcon size={100} />
-          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-10 space-y-8">
+        <form onSubmit={handleSubmit} className="p-10 space-y-8 overflow-y-auto min-h-0">
           {/* Availability Info Banner */}
           <div className="bg-amber-50/50 p-5 rounded-3xl border border-amber-100/50 flex items-start gap-4">
             <Info size={20} className="text-amber-600 mt-1 shrink-0" />
@@ -161,7 +158,7 @@ const BookingModal = ({ isOpen, onClose, resource, onBookingSuccess }) => {
             </div>
           </div>
 
-          <div className="pt-6 border-t border-slate-100 flex gap-4">
+          <div className="pt-6 border-t border-slate-100 flex gap-4 sticky bottom-0 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
             <button onClick={onClose} type="button" className="flex-1 py-5 border-2 border-slate-100 rounded-2xl font-semibold text-slate-500 hover:bg-slate-50 active:scale-95 transition-all text-sm">
               Stay Browsing
             </button>

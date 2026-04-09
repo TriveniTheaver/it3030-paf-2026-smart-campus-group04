@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Mail, Lock, ShieldAlert, ArrowRight, Activity } from 'lucide-react';
+import { Mail, Lock, ShieldAlert, ArrowRight, Activity, ArrowLeft } from 'lucide-react';
 
 export default function LoginPage() {
-  const { login, overrideToken } = useAuth();
+  const { login, overrideToken, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [portalType, setPortalType] = useState('CLIENT'); // 'CLIENT' | 'STAFF'
@@ -34,7 +34,24 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      await login(email, password);
+      const u = await login(email, password);
+      const role = u?.role;
+
+      const allowed =
+        portalType === 'CLIENT'
+          ? role === 'USER'
+          : role === 'ADMIN' || role === 'TECHNICIAN';
+
+      if (!allowed) {
+        logout();
+        setError(
+          portalType === 'CLIENT'
+            ? 'Please use the Admin / Technician portal to sign in with this account.'
+            : 'Please use the Student / Staff portal to sign in with this account.'
+        );
+        return;
+      }
+
       navigate('/dashboard');
     } catch {
       setError('Invalid credentials. Please verify your email and password.');
@@ -56,6 +73,13 @@ export default function LoginPage() {
 
         {/* Login Form Side */}
         <div className="p-12 md:w-7/12">
+
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-sliit-navy transition-colors mb-6"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back to Home
+          </Link>
           
           <div className="flex bg-slate-100 p-1 rounded-lg mb-8">
             <button 
