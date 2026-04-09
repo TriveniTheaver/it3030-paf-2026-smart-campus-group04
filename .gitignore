@@ -10,6 +10,9 @@
 .idea/
 .vscode/
 
+# Local DB secrets (optional import from application.yml)
+backend/web-app/src/main/resources/application-local.yml
+
 # OS junk
 .DS_Store
 Thumbs.db

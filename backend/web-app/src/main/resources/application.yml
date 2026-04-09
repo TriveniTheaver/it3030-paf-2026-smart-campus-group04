@@ -1,10 +1,13 @@
 spring:
   application:
     name: smartcampus-hub
+  config:
+    import: optional:classpath:application-local.yml
   datasource:
     url: ${SMARTCAMPUS_DB_URL:jdbc:mysql://localhost:3306/smartcampus?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
     username: ${SMARTCAMPUS_DB_USERNAME:root}
-    password: ${SMARTCAMPUS_DB_PASSWORD:}
+    # Override with SMARTCAMPUS_DB_PASSWORD, application-local.yml, or default below.
+    password: ${SMARTCAMPUS_DB_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:

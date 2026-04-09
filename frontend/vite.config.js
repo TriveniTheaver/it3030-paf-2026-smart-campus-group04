@@ -9,6 +9,9 @@ export default defineConfig({
     react()
   ],
   server: {
+    port: 5173,
+    // If 5173 is taken, fail instead of switching to 5174 (Spring CORS only allows :5173).
+    strictPort: true,
     proxy: {
       '/api': {
         target: 'http://localhost:8081',
