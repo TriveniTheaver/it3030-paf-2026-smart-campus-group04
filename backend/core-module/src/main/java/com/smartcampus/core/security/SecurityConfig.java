@@ -25,6 +25,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -32,10 +33,17 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/api/facilities/**", "/h2-console/**").permitAll()
+                .requestMatchers(
+                        "/api/auth/**",
+                        "/api/facilities/**",
+                        "/h2-console/**",
+                        "/oauth2/**",
+                        "/login/oauth2/**"
+                ).permitAll()
                 .anyRequest().authenticated()
             )
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .oauth2Login(oauth -> oauth.successHandler(oAuth2LoginSuccessHandler))
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
             .authenticationProvider(authenticationProvider)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .headers(headers -> headers.frameOptions(opt -> opt.sameOrigin()));

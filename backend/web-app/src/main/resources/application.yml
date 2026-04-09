@@ -4,7 +4,7 @@ spring:
   datasource:
     url: ${SMARTCAMPUS_DB_URL:jdbc:mysql://localhost:3306/smartcampus?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
     username: ${SMARTCAMPUS_DB_USERNAME:root}
-    password: ${SMARTCAMPUS_DB_PASSWORD:}
+    password: ${SMARTCAMPUS_DB_PASSWORD:root1234}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -23,9 +23,9 @@ spring:
       client:
         registration:
           google:
-            client-id: "PLACEHOLDER_GOOGLE_CLIENT_ID"
-            client-secret: "PLACEHOLDER_GOOGLE_CLIENT_SECRET"
-            scope: profile, email
+            client-id: ${GOOGLE_CLIENT_ID:placeholder}
+            client-secret: ${GOOGLE_CLIENT_SECRET:placeholder}
+            scope: email, profile
 
 server:
   port: 8081

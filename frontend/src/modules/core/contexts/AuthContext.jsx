@@ -80,7 +80,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const loginWithGoogle = () => {
-    window.location.href = '/mock-google-login';
+    window.location.href = 'http://localhost:8081/oauth2/authorization/google';
   };
 
   const value = { currentUser, login, register, logout, overrideToken, loginWithGoogle };
