@@ -56,7 +56,10 @@ const BookingModal = ({ isOpen, onClose, resource, onBookingSuccess }) => {
       onClose();
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.message || err.response?.data || 'Failed to submit booking request. Please check availability windows.');
+      const apiMessage =
+        (typeof err.response?.data === 'string' ? err.response.data : err.response?.data?.message) ||
+        err.message;
+      setError(apiMessage || 'Failed to submit booking request. Please check availability windows.');
     } finally {
       setLoading(false);
     }

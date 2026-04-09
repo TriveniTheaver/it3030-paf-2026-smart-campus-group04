@@ -4,39 +4,54 @@ import com.smartcampus.core.model.Notification;
 import com.smartcampus.core.model.User;
 import com.smartcampus.core.repository.NotificationRepository;
 import com.smartcampus.core.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.smartcampus.core.service.NotificationService;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/notifications")
+@PreAuthorize("hasAnyRole('USER','ADMIN','TECHNICIAN')")
 public class NotificationController {
 
-    @Autowired
-    private NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
+    private final UserRepository userRepository;
+    private final NotificationRepository notificationRepository;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    public NotificationController() {
+    public NotificationController(
+            NotificationService notificationService,
+            UserRepository userRepository,
+            NotificationRepository notificationRepository
+    ) {
+        this.notificationService = notificationService;
+        this.userRepository = userRepository;
+        this.notificationRepository = notificationRepository;
     }
 
     @GetMapping
-    public List<Notification> getMyNotifications(Principal principal) {
-        if (principal == null) return List.of();
-        User user = userRepository.findByEmail(principal.getName())
+    public List<NotificationDto> getMyNotifications(Authentication authentication) {
+        if (authentication == null) return List.of();
+        User user = userRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        return notificationRepository.findByRecipientIdOrderByCreatedAtDesc(user.getId());
+        return notificationService.getNotificationsForUser(user.getId()).stream()
+                .map(NotificationDto::from)
+                .toList();
     }
 
     @PutMapping("/{id}/read")
     public void markAsRead(@PathVariable("id") Long id) {
-        notificationRepository.findById(id).ifPresent(n -> {
-            n.setReadStatus(true);
-            notificationRepository.save(n);
-        });
+        notificationService.markAsRead(id);
+    }
+
+    @PutMapping("/read-all")
+    public void markAllAsRead(Authentication authentication) {
+        if (authentication == null) return;
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        notificationService.markAllAsRead(user.getId());
     }
 
     @DeleteMapping("/{id}")
@@ -45,21 +60,24 @@ public class NotificationController {
     }
 
     @GetMapping("/admin/all")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
-    public List<Notification> getAllNotifications() {
-        return notificationRepository.findAll();
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<NotificationDto> getAllNotifications() {
+        return notificationRepository.findAll().stream().map(NotificationDto::from).toList();
     }
 
     @PostMapping("/broadcast")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public void broadcastNotification(@RequestParam String message) {
         List<User> allUsers = userRepository.findAll();
         for (User user : allUsers) {
-            notificationRepository.save(Notification.builder()
-                    .recipient(user)
-                    .message("[SYSTEM BROADCAST] " + message)
-                    .readStatus(false)
-                    .build());
+            notificationService.createNotification(user.getId(), "[SYSTEM BROADCAST] " + message);
+        }
+    }
+
+    public record NotificationDto(Long id, String message, boolean readStatus, LocalDateTime createdAt) {
+        public static NotificationDto from(Notification n) {
+            return new NotificationDto(n.getId(), n.getMessage(), n.isReadStatus(), n.getCreatedAt());
         }
     }
 }
+

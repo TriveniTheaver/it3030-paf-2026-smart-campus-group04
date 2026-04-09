@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
-import { useAuth } from './AuthContext';
 import { Bell, X } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 
-const NotificationPanel = () => {
+export default function NotificationBell() {
   const { currentUser } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -19,18 +19,17 @@ const NotificationPanel = () => {
 
   /* eslint-disable react-hooks/set-state-in-effect -- polling fetch updates local state */
   useEffect(() => {
-    if (currentUser) {
-      fetchNotifications();
-      const interval = setInterval(fetchNotifications, 30000);
-      return () => clearInterval(interval);
-    }
+    if (!currentUser) return;
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
   }, [currentUser, fetchNotifications]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const markAsRead = async (id) => {
     try {
       await axios.put(`/api/notifications/${id}/read`);
-      setNotifications(notifications.map(n => n.id === id ? { ...n, readStatus: true } : n));
+      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, readStatus: true } : n)));
     } catch (err) {
       console.error('Failed to mark as read', err);
     }
@@ -39,7 +38,7 @@ const NotificationPanel = () => {
   const markAllAsRead = async () => {
     try {
       await axios.put('/api/notifications/read-all');
-      setNotifications(notifications.map(n => ({ ...n, readStatus: true })));
+      setNotifications((prev) => prev.map((n) => ({ ...n, readStatus: true })));
     } catch (err) {
       console.error('Failed to mark all as read', err);
     }
@@ -47,15 +46,19 @@ const NotificationPanel = () => {
 
   if (!currentUser) return null;
 
-  const unreadCount = notifications.filter(n => !n.readStatus).length;
-  const togglePanel = () => setIsOpen(!isOpen);
+  const unreadCount = notifications.filter((n) => !n.readStatus).length;
 
   return (
     <div className="relative">
-      <button onClick={togglePanel} className="relative p-2 text-sliit-blue hover:text-sliit-navy transition-all transform active:scale-95">
+      <button
+        type="button"
+        onClick={() => setIsOpen((v) => !v)}
+        className="relative p-2 text-sliit-blue hover:text-sliit-navy transition-all transform active:scale-95"
+        aria-label="Open notifications"
+      >
         <Bell size={24} />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-[10px] font-semibold leading-none text-white transform translate-x-1 -translate-y-1 bg-sliit-orange rounded-full ring-2 ring-white animate-pulse">
+          <span className="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-[10px] font-semibold leading-none text-white transform translate-x-1 -translate-y-1 bg-red-500 rounded-full ring-2 ring-white">
             {unreadCount}
           </span>
         )}
@@ -66,7 +69,7 @@ const NotificationPanel = () => {
           <div className="px-6 py-5 bg-slate-50 flex justify-between items-center gap-3 border-b border-slate-100">
             <div className="flex items-center gap-3 min-w-0">
               <span className="sc-label truncate">Notifications</span>
-              {unreadCount > 0 && <span className="text-xs font-semibold text-sliit-orange shrink-0">{unreadCount} new</span>}
+              {unreadCount > 0 && <span className="text-xs font-semibold text-red-600 shrink-0">{unreadCount} unread</span>}
             </div>
             <button
               type="button"
@@ -77,6 +80,7 @@ const NotificationPanel = () => {
               <X size={20} strokeWidth={2.5} />
             </button>
           </div>
+
           <div className="max-h-[400px] overflow-y-auto no-scrollbar">
             {notifications.length === 0 ? (
               <div className="p-12 text-center">
@@ -86,20 +90,20 @@ const NotificationPanel = () => {
                 <p className="sc-meta">All clear for now.</p>
               </div>
             ) : (
-              notifications.map(notif => (
-                <div 
-                  key={notif.id} 
+              notifications.map((notif) => (
+                <div
+                  key={notif.id}
                   onClick={() => !notif.readStatus && markAsRead(notif.id)}
                   className={`p-6 border-b border-slate-50 transition-all cursor-pointer hover:bg-slate-50 ${notif.readStatus ? 'opacity-60' : 'bg-blue-50/30'}`}
                 >
                   <div className="flex gap-4">
-                    <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${notif.readStatus ? 'bg-slate-300' : 'bg-sliit-orange animate-pulse'}`}></div>
+                    <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${notif.readStatus ? 'bg-slate-300' : 'bg-red-500'}`}></div>
                     <div className="space-y-1">
                       <p className={`text-sm ${notif.readStatus ? 'font-medium text-slate-600' : 'font-semibold text-sliit-blue'}`}>
                         {notif.message}
                       </p>
                       <p className="sc-label">
-                        {new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {notif.createdAt ? new Date(notif.createdAt).toLocaleString() : ''}
                       </p>
                     </div>
                   </div>
@@ -107,6 +111,7 @@ const NotificationPanel = () => {
               ))
             )}
           </div>
+
           <div className="p-4 bg-slate-50 flex items-center justify-between gap-3 border-t border-slate-100">
             <button
               type="button"
@@ -131,6 +136,5 @@ const NotificationPanel = () => {
       )}
     </div>
   );
-};
+}
 
-export default NotificationPanel;

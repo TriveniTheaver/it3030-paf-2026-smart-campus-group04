@@ -3,17 +3,16 @@ package com.smartcampus.bookings.service;
 import com.smartcampus.bookings.model.Booking;
 import com.smartcampus.bookings.model.BookingStatus;
 import com.smartcampus.bookings.repository.BookingRepository;
-import com.smartcampus.core.model.Notification;
 import com.smartcampus.core.model.User;
-import com.smartcampus.core.repository.NotificationRepository;
 import com.smartcampus.core.repository.UserRepository;
+import com.smartcampus.core.service.NotificationService;
 import com.smartcampus.facilities.model.Resource;
 import com.smartcampus.facilities.repository.ResourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -30,7 +29,7 @@ public class BookingService {
     private UserRepository userRepository;
 
     @Autowired
-    private NotificationRepository notificationRepository;
+    private NotificationService notificationService;
 
     @Transactional
     public Booking createBooking(Long resourceId, String userEmail, Booking bookingData) {
@@ -75,12 +74,10 @@ public class BookingService {
         Booking saved = bookingRepository.save(booking);
 
         // Notify user about pending request
-        Notification notif = Notification.builder()
-                .recipient(user)
-                .message("Review Pending: Your request for " + resource.getName() + " has been submitted.")
-                .readStatus(false)
-                .build();
-        notificationRepository.save(notif);
+        notificationService.createNotification(
+                user.getId(),
+                "Review Pending: Your request for " + resource.getName() + " has been submitted."
+        );
 
         return saved;
     }
@@ -122,13 +119,21 @@ public class BookingService {
 
         Booking saved = bookingRepository.save(booking);
 
-        String message = String.format("Your booking for %s is now %s.", booking.getResource().getName(), newStatus.name());
-        Notification notif = Notification.builder()
-                .recipient(booking.getUser())
-                .message(message)
-                .readStatus(false)
-                .build();
-        notificationRepository.save(notif);
+        if (newStatus == BookingStatus.APPROVED || newStatus == BookingStatus.REJECTED) {
+            String resourceName = booking.getResource().getName();
+            String date = booking.getStartTime() != null
+                    ? booking.getStartTime().toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)
+                    : "N/A";
+
+            String message;
+            if (newStatus == BookingStatus.APPROVED) {
+                message = String.format("Your booking for %s on %s has been APPROVED", resourceName, date);
+            } else {
+                String reason = (adminReason == null || adminReason.isBlank()) ? "No reason provided" : adminReason;
+                message = String.format("Your booking for %s on %s has been REJECTED. Reason: %s", resourceName, date, reason);
+            }
+            notificationService.createNotification(booking.getUser().getId(), message);
+        }
 
         return saved;
     }

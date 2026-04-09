@@ -25,8 +25,8 @@ public class BookingController {
     private BookingRepository bookingRepository;
 
     @PostMapping
-    // Student/staff accounts are represented as role USER in this system
-    @PreAuthorize("hasRole('USER')")
+    // Student/staff accounts use role USER; admins/technicians can also create bookings when needed
+    @PreAuthorize("hasAnyRole('USER','ADMIN','TECHNICIAN')")
     public ResponseEntity<?> createBooking(@RequestBody BookingRequest request, Principal principal) {
         try {
             Booking data = Booking.builder()

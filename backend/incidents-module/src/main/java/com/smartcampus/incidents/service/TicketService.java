@@ -1,10 +1,9 @@
 package com.smartcampus.incidents.service;
 
-import com.smartcampus.core.model.Notification;
 import com.smartcampus.core.model.Role;
 import com.smartcampus.core.model.User;
-import com.smartcampus.core.repository.NotificationRepository;
 import com.smartcampus.core.repository.UserRepository;
+import com.smartcampus.core.service.NotificationService;
 import com.smartcampus.facilities.model.Resource;
 import com.smartcampus.facilities.repository.ResourceRepository;
 import com.smartcampus.incidents.model.Comment;
@@ -42,7 +41,7 @@ public class TicketService {
     private CommentRepository commentRepository;
 
     @Autowired
-    private NotificationRepository notificationRepository;
+    private NotificationService notificationService;
 
     @Autowired
     private UserRepository userRepository;
@@ -60,10 +59,18 @@ public class TicketService {
         if (ticket.getReporter() != null && ticket.getReporter().getId().equals(viewer.getId())) {
             return true;
         }
-        if (ticket.getAssignee() != null && ticket.getAssignee().getId().equals(viewer.getId())) {
-            return true;
-        }
-        return false;
+        return ticket.getAssignee() != null && ticket.getAssignee().getId().equals(viewer.getId());
+    }
+
+    /**
+     * Legacy helper: set reporter from JWT principal email (e.g. tests or alternate clients).
+     */
+    @Transactional
+    public Ticket createTicket(Ticket ticket, String reporterEmail) {
+        User reporter = userRepository.findByEmail(reporterEmail)
+                .orElseThrow(() -> new IllegalArgumentException("Reporter not found"));
+        ticket.setReporter(reporter);
+        return ticketRepository.save(ticket);
     }
 
     @Transactional
@@ -93,8 +100,16 @@ public class TicketService {
 
     @Transactional
     public Ticket updateTicketStatus(Long ticketId, TicketStatus newStatus, String resolutionNotes, User actor) {
-        Ticket ticket = ticketRepository.findById(ticketId)
+        System.out.println("[TicketService] updateTicketStatus called. ticketId=" + ticketId + ", newStatus=" + newStatus);
+        Ticket ticket = ticketRepository.findByIdWithReporter(ticketId)
                 .orElseThrow(() -> new IllegalArgumentException("Ticket not found"));
+
+        System.out.println("[TicketService] Loaded ticket id=" + ticket.getId() + ". reporter is "
+                + (ticket.getReporter() == null ? "NULL" : "NOT NULL"));
+        if (ticket.getReporter() != null) {
+            System.out.println("[TicketService] Reporter id=" + ticket.getReporter().getId());
+        }
+
         Role role = actor.getRole();
 
         if (role == Role.ADMIN) {
@@ -122,10 +137,11 @@ public class TicketService {
 
         Ticket savedTicket = ticketRepository.save(ticket);
 
-        notificationRepository.save(Notification.builder()
-                .recipient(ticket.getReporter())
-                .message(String.format("Ticket #%d status updated to %s.", ticket.getId(), newStatus.name()))
-                .build());
+        String notifMsg = String.format("Your ticket #%d status has been updated to %s", ticket.getId(), newStatus.name());
+        if (ticket.getReporter() != null) {
+            notificationService.createNotification(ticket.getReporter().getId(), notifMsg);
+            System.out.println("[TicketService] Notification sent to user: " + ticket.getReporter().getId());
+        }
 
         return savedTicket;
     }
@@ -146,15 +162,17 @@ public class TicketService {
         }
         Ticket savedTicket = ticketRepository.save(ticket);
 
-        notificationRepository.save(Notification.builder()
-                .recipient(tech)
-                .message(String.format("You have been assigned to Ticket #%d: %s", ticket.getId(), ticket.getResource().getName()))
-                .build());
+        notificationService.createNotification(
+                tech.getId(),
+                String.format("You have been assigned to Ticket #%d: %s", ticket.getId(), ticket.getResource().getName())
+        );
 
-        notificationRepository.save(Notification.builder()
-                .recipient(ticket.getReporter())
-                .message(String.format("Ticket #%d is now assigned to %s for resolution.", ticket.getId(), tech.getName()))
-                .build());
+        if (ticket.getReporter() != null) {
+            notificationService.createNotification(
+                    ticket.getReporter().getId(),
+                    String.format("Ticket #%d is now assigned to %s for resolution.", ticket.getId(), tech.getName())
+            );
+        }
 
         return savedTicket;
     }
@@ -177,18 +195,19 @@ public class TicketService {
                 .build();
         Comment savedComment = commentRepository.save(comment);
 
-        String notifMsg = String.format("New comment on Ticket #%d by %s.", ticket.getId(), author.getName());
+        String commenterName = author.getName() != null ? author.getName() : "Unknown user";
+        String reporterMsg = String.format("New comment added to your ticket #%d by %s", ticket.getId(), commenterName);
+        String staffMsg = String.format("New comment on Ticket #%d by %s.", ticket.getId(), commenterName);
 
-        if (author.getId().equals(ticket.getReporter().getId()) && ticket.getAssignee() != null) {
-            notificationRepository.save(Notification.builder()
-                    .recipient(ticket.getAssignee())
-                    .message(notifMsg)
-                    .build());
-        } else if (!author.getId().equals(ticket.getReporter().getId())) {
-            notificationRepository.save(Notification.builder()
-                    .recipient(ticket.getReporter())
-                    .message(notifMsg)
-                    .build());
+        if (ticket.getReporter() != null
+                && !author.getId().equals(ticket.getReporter().getId())) {
+            notificationService.createNotification(ticket.getReporter().getId(), reporterMsg);
+        }
+
+        if (ticket.getReporter() != null
+                && author.getId().equals(ticket.getReporter().getId())
+                && ticket.getAssignee() != null) {
+            notificationService.createNotification(ticket.getAssignee().getId(), staffMsg);
         }
 
         return savedComment;

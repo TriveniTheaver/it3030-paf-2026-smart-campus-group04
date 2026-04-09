@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useNavigate, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './modules/core/contexts/AuthContext';
-import NotificationPanel from './modules/core/contexts/NotificationPanel';
+import NotificationBell from './modules/core/components/notifications/NotificationBell';
 import FacilitiesDashboard from './modules/facilities/components/FacilitiesDashboard';
 import BookingsDashboard from './modules/bookings/components/BookingsDashboard';
 import IncidentsDashboard from './modules/incidents/components/IncidentsDashboard';
@@ -12,6 +12,7 @@ import LoginPage from './modules/core/components/auth/LoginPage';
 import RegisterPage from './modules/core/components/auth/RegisterPage';
 import ForgotPasswordPage from './modules/core/components/auth/ForgotPasswordPage';
 import MockGoogleLogin from './modules/core/components/auth/MockGoogleLogin';
+import OAuthCallbackPage from './modules/core/components/auth/OAuthCallbackPage';
 import ProtectedRoute from './modules/core/components/auth/ProtectedRoute';
 import HomePage from './modules/core/components/public/HomePage';
 import { sliitAudienceFromEmail } from './modules/core/utils/sliitAudience';
@@ -142,7 +143,7 @@ const Navbar = () => {
               <div className="h-10 w-10 bg-sliit-light rounded-full flex items-center justify-center border-2 border-sliit-orange shadow-inner">
                 <span className="font-semibold text-sliit-blue">{currentUser.name.charAt(0)}</span>
               </div>
-              <NotificationPanel />
+              <NotificationBell />
               <button
                 type="button"
                 onClick={() => {
@@ -309,6 +310,7 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/mock-google-login" element={<MockGoogleLogin />} />
+            <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
 
             <Route
               element={
