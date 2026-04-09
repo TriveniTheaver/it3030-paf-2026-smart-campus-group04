@@ -1,6 +1,17 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useAuth } from '../../core/contexts/AuthContext';
-import { AlertTriangle, MessageSquare, Image as ImageIcon, Paperclip, Pencil, Shield, Trash2, Wrench } from 'lucide-react';
+import {
+  AlertTriangle,
+  ArrowRight,
+  ArrowUpDown,
+  MessageSquare,
+  Image as ImageIcon,
+  Pencil,
+  Shield,
+  Trash2,
+  Upload,
+  Wrench,
+} from 'lucide-react';
 import { format } from 'date-fns';
 import axios from 'axios';
 
@@ -14,6 +25,42 @@ const TECH_WORKFLOW_STATUSES = [
   { value: 'RESOLVED', label: 'Resolved — fix complete' },
   { value: 'CLOSED', label: 'Closed — job complete / handed off' },
 ];
+
+const TICKET_STATUS_CHIPS = [
+  { id: 'ALL', label: 'All tickets' },
+  { id: 'OPEN', label: 'Open' },
+  { id: 'IN_PROGRESS', label: 'In progress' },
+  { id: 'RESOLVED', label: 'Resolved' },
+  { id: 'CLOSED', label: 'Closed' },
+  { id: 'REJECTED', label: 'Rejected' },
+];
+
+const SORT_FIELDS = [
+  { id: 'DATE', label: 'Date' },
+  { id: 'PRIORITY', label: 'Priority' },
+];
+
+const PRIORITY_ORDER = { HIGH: 3, MEDIUM: 2, LOW: 1 };
+
+function sortTicketsCopy(list, sortBy, sortDir) {
+  const mul = sortDir === 'ASC' ? 1 : -1;
+  return [...list].sort((a, b) => {
+    let cmp = 0;
+    if (sortBy === 'PRIORITY') {
+      const pa = PRIORITY_ORDER[a.priority] ?? 0;
+      const pb = PRIORITY_ORDER[b.priority] ?? 0;
+      cmp = pa - pb;
+    } else {
+      const da = new Date(a.createdAt).getTime();
+      const db = new Date(b.createdAt).getTime();
+      cmp = da === db ? 0 : da < db ? -1 : 1;
+    }
+    return cmp * mul;
+  });
+}
+
+const FORM_LABEL =
+  'block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-2';
 
 /** Loads ticket evidence: public URLs as-is; uploaded files via authenticated blob fetch (JWT). */
 function AuthenticatedTicketImage({ src, alt, className }) {
@@ -87,6 +134,34 @@ const IncidentsDashboard = () => {
   const isUser = currentUser?.role === 'USER';
   const isAdmin = currentUser?.role === 'ADMIN';
   const isTechnician = currentUser?.role === 'TECHNICIAN';
+
+  const [ticketStatusFilter, setTicketStatusFilter] = useState('ALL');
+  const [sortMenuOpen, setSortMenuOpen] = useState(false);
+  const [sortBy, setSortBy] = useState('DATE');
+  const [sortDir, setSortDir] = useState('DESC');
+  const sortDropdownRef = useRef(null);
+
+  const filteredTickets = useMemo(() => {
+    if (!tickets?.length) return [];
+    if (ticketStatusFilter === 'ALL') return tickets;
+    return tickets.filter((t) => t.status === ticketStatusFilter);
+  }, [tickets, ticketStatusFilter]);
+
+  const displayedTickets = useMemo(
+    () => sortTicketsCopy(filteredTickets, sortBy, sortDir),
+    [filteredTickets, sortBy, sortDir]
+  );
+
+  useEffect(() => {
+    if (!sortMenuOpen) return undefined;
+    const close = (e) => {
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(e.target)) {
+        setSortMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [sortMenuOpen]);
 
   const pageCopy = useMemo(() => {
     if (isAdmin) {
@@ -357,6 +432,20 @@ const IncidentsDashboard = () => {
     }
   };
 
+  /** Left accent bar on cards — priority at a glance (red / amber / green). */
+  const getPriorityAccentClass = (priority) => {
+    switch (priority) {
+      case 'HIGH':
+        return 'bg-rose-500';
+      case 'MEDIUM':
+        return 'bg-amber-400';
+      case 'LOW':
+        return 'bg-emerald-500';
+      default:
+        return 'bg-slate-300';
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'OPEN':
@@ -384,16 +473,15 @@ const IncidentsDashboard = () => {
       {isUser ? (
         <div className={`w-full md:w-1/3 transition-all ${showForm ? 'block' : 'hidden md:block'}`}>
           <div className="bg-white p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100 sticky top-6 max-h-[90vh] overflow-y-auto no-scrollbar">
-            <h2 className="sc-section-title text-sliit-blue mb-8 flex items-center gap-3">
-              <AlertTriangle className="text-sliit-orange" size={28} /> Report an incident
+            <h2 className="sc-section-title text-sliit-blue mb-2 flex items-center gap-3">
+              <AlertTriangle className="text-sliit-orange shrink-0" size={28} /> New incident report
             </h2>
-            <p className="sc-meta text-slate-500 mb-6">
-              Your ticket goes to campus operations. An administrator triages it and assigns a technician; you will
-              receive notifications when the status changes.
+            <p className="sc-meta text-slate-500 mb-8">
+              Submit a maintenance or fault report.
             </p>
-            <form className="space-y-6" onSubmit={handlePostTicket}>
+            <form className="space-y-7" onSubmit={handlePostTicket}>
               <div>
-                <label className="block sc-label mb-2">Facility / resource</label>
+                <label className={FORM_LABEL}>Facility / resource</label>
                 <select
                   value={formData.resourceId}
                   onChange={(e) => setFormData({ ...formData, resourceId: e.target.value })}
@@ -409,71 +497,79 @@ const IncidentsDashboard = () => {
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block sc-label mb-2">Category</label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full bg-slate-50 border-slate-100 rounded-2xl p-4 border font-semibold text-slate-800 outline-none"
-                  >
-                    <option>Hardware</option>
-                    <option>Software</option>
-                    <option>Facility</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block sc-label mb-2">Priority</label>
-                  <select
-                    value={formData.priority}
-                    onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                    className="w-full bg-slate-50 border-slate-100 rounded-2xl p-4 border font-semibold text-slate-800 outline-none"
-                  >
-                    <option>LOW</option>
-                    <option>MEDIUM</option>
-                    <option>HIGH</option>
-                  </select>
+              <div>
+                <label className={`${FORM_LABEL} mb-3`}>Category &amp; priority</label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <select
+                      value={formData.category}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      className="w-full bg-slate-50 border-slate-100 rounded-2xl p-4 border font-semibold text-slate-800 outline-none"
+                    >
+                      <option>Hardware</option>
+                      <option>Software</option>
+                      <option>Facility</option>
+                    </select>
+                  </div>
+                  <div>
+                    <select
+                      value={formData.priority}
+                      onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                      className="w-full bg-slate-50 border-slate-100 rounded-2xl p-4 border font-semibold text-slate-800 outline-none"
+                    >
+                      <option>LOW</option>
+                      <option>MEDIUM</option>
+                      <option>HIGH</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
               <div>
-                <label className="block sc-label mb-2">Preferred contact (phone / email)</label>
+                <label className={FORM_LABEL}>Preferred contact</label>
                 <input
                   type="text"
                   value={formData.preferredContact}
                   onChange={(e) => setFormData({ ...formData, preferredContact: e.target.value })}
-                  className="w-full bg-slate-50 border-slate-100 rounded-2xl p-4 border font-semibold text-slate-800 outline-none"
-                  placeholder="e.g. 077 123 4567"
+                  className="w-full bg-slate-50 border-slate-100 rounded-2xl p-4 border font-semibold text-slate-800 outline-none placeholder:text-slate-400"
+                  placeholder="Phone or email"
                 />
               </div>
 
               <div>
-                <label className="block sc-label mb-2">Issue description</label>
+                <label className={FORM_LABEL}>Issue description</label>
                 <textarea
-                  rows="3"
+                  rows={4}
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full bg-slate-50 border-slate-100 rounded-2xl p-4 border font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-sliit-orange"
-                  placeholder="Describe the issue…"
+                  className="w-full bg-slate-50 border-slate-100 rounded-2xl p-4 border font-medium text-slate-800 outline-none focus:ring-2 focus:ring-sliit-orange placeholder:text-slate-400 leading-relaxed"
+                  placeholder="Describe the fault or issue in detail "
                   required
                 />
               </div>
 
               <div>
-                <label className="block sc-label mb-2">Evidence images (max 3)</label>
-                <p className="sc-meta text-slate-500 text-xs mb-2">
-                  JPEG, PNG, GIF, or WebP — up to 5 MB each. Up to 3 images total. In the file window,{' '}
-                  <strong>Ctrl+click</strong> (Windows) or <strong>Cmd+click</strong> (Mac) to select multiple, or use
-                  Choose file again to add more (until you reach 3).
-                </p>
-                <input
-                  ref={attachmentInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/gif,image/webp"
-                  multiple
-                  onChange={onAttachmentFilesChange}
-                  className="w-full text-sm text-slate-600 file:mr-4 file:rounded-xl file:border-0 file:bg-sliit-blue file:px-4 file:py-2 file:text-xs file:font-semibold file:text-white hover:file:bg-sliit-navy"
-                />
+                <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/80 p-4 transition-colors hover:border-slate-300 hover:bg-slate-50">
+                  <div className="mb-2 flex items-start justify-between gap-3">
+                    <span className="text-sm font-semibold text-slate-800">Evidence photos</span>
+                    <span className="shrink-0 text-right text-[11px] font-medium leading-tight text-slate-500">
+                      Up to 3 · 5 MB each
+                    </span>
+                  </div>
+                  <p className="mb-3 text-xs text-slate-500">JPEG, PNG or WebP. Ctrl+click to select multiple.</p>
+                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-sliit-blue px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-sliit-navy">
+                    <Upload size={15} strokeWidth={2.5} />
+                    Choose files
+                    <input
+                      ref={attachmentInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      multiple
+                      onChange={onAttachmentFilesChange}
+                      className="sr-only"
+                    />
+                  </label>
+                </div>
                 {attachmentFiles.length > 0 ? (
                   <div className="mt-4 grid grid-cols-3 gap-2">
                     {attachmentFiles.map((file, i) => (
@@ -545,81 +641,204 @@ const IncidentsDashboard = () => {
             </p>
           </div>
         ) : (
-          <div className="space-y-6">
-            {tickets.map((ticket) => (
-              <div key={ticket.id} className="group sc-interactive-card p-8 relative overflow-hidden">
-                <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
-                  <div>
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="sc-label bg-slate-100 px-3 py-1 rounded-full group-hover:bg-white/15 group-hover:text-slate-200 transition-colors">
-                        #{ticket.id}
-                      </span>
-                      <h3 className="sc-section-title text-sliit-blue group-hover:text-sliit-orange transition-colors">
-                        {ticket.resource?.name || 'Asset ID: ' + ticket.id}
-                      </h3>
-                    </div>
-                    <div className="sc-meta flex flex-wrap items-center gap-x-2 gap-y-1 group-hover:text-slate-300 transition-colors">
-                      <Paperclip size={14} className="text-sliit-orange shrink-0" />
-                      <span>
-                        By {ticket.reporter?.name || 'Reporter'} •{' '}
-                        {format(new Date(ticket.createdAt), 'MMM d, h:mm a')}
-                      </span>
-                      {isAdmin ? (
-                        <span className="text-slate-400">• Reporter email: {ticket.reporter?.email || '—'}</span>
-                      ) : null}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`px-4 py-1.5 text-xs font-semibold rounded-full border shadow-sm ${getStatusColor(ticket.status)}`}
-                    >
-                      {ticket.status.replace(/_/g, ' ')}
-                    </span>
-                    <span
-                      className={`px-3 py-1 text-xs font-semibold rounded-full shadow-sm border ${getPriorityColor(ticket.priority)}`}
-                    >
-                      {ticket.priority}
-                    </span>
-                  </div>
-                </div>
-
-                <p className="sc-body text-slate-600 mb-8 leading-snug group-hover:text-slate-200 transition-colors">
-                  {ticket.description}
-                </p>
-
-                {ticket.assignee && (
-                  <div className="mb-8 flex items-center gap-3 bg-slate-50/50 p-4 rounded-2xl border border-slate-100 group-hover:bg-white/10 group-hover:border-white/20 transition-colors">
-                    <div className="w-8 h-8 bg-sliit-blue text-white rounded-full flex items-center justify-center font-semibold text-xs">
-                      T
-                    </div>
-                    <div className="text-xs">
-                      <span className="block sc-label">Assigned technician</span>
-                      <span className="font-semibold text-sliit-blue">{ticket.assignee.name}</span>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex justify-between items-center border-t border-slate-100 group-hover:border-slate-500/50 pt-8 transition-colors">
-                  <div className="flex items-center gap-6 sc-label text-slate-500 group-hover:text-slate-300">
-                    <span className="flex items-center gap-2">
-                      <MessageSquare size={16} className="text-sliit-orange" /> {ticket.comments?.length || 0} logs
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <ImageIcon size={16} className="text-slate-300" /> {ticket.attachments?.length || 0} files
-                    </span>
-                  </div>
-
+          <>
+            <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+              <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+                {TICKET_STATUS_CHIPS.map((chip) => (
                   <button
+                    key={chip.id}
                     type="button"
-                    onClick={() => setSelectedTicket(ticket)}
-                    className="px-8 py-4 text-sliit-blue bg-blue-50/50 font-semibold text-sm rounded-2xl hover:bg-sliit-blue hover:text-white transition-all transform active:scale-95"
+                    onClick={() => setTicketStatusFilter(chip.id)}
+                    className={`rounded-full px-3.5 py-2 text-xs font-semibold border transition-all ${
+                      ticketStatusFilter === chip.id
+                        ? 'border-sliit-navy bg-sliit-navy text-white shadow-sm'
+                        : 'border-slate-200 bg-white text-slate-600 hover:border-sliit-orange/40 hover:text-slate-900'
+                    }`}
                   >
-                    Open details
+                    {chip.label}
                   </button>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
+              <div className="relative shrink-0 self-end sm:self-center" ref={sortDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setSortMenuOpen((o) => !o)}
+                  className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold transition-all ${
+                    sortMenuOpen
+                      ? 'border-sliit-navy bg-slate-50 text-sliit-navy shadow-sm'
+                      : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                  }`}
+                  aria-expanded={sortMenuOpen}
+                  aria-haspopup="listbox"
+                >
+                  <ArrowUpDown size={15} strokeWidth={2.5} className="shrink-0 text-slate-500" aria-hidden />
+                  Sort
+                </button>
+                {sortMenuOpen ? (
+                  <div
+                    className="absolute right-0 top-full z-30 mt-2 w-[min(100vw-2rem,17rem)] rounded-xl border border-slate-200 bg-white p-3 shadow-xl"
+                    role="dialog"
+                    aria-label="Sort tickets"
+                  >
+                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">Sort by</p>
+                    <div className="flex flex-col gap-1">
+                      {SORT_FIELDS.map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => setSortBy(opt.id)}
+                          className={`rounded-lg px-3 py-2 text-left text-xs font-medium transition-colors ${
+                            sortBy === opt.id
+                              ? 'bg-sliit-navy text-white'
+                              : 'text-slate-700 hover:bg-slate-100'
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="my-3 border-t border-slate-100" />
+                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">Direction</p>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSortDir('ASC')}
+                        className={`flex-1 rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${
+                          sortDir === 'ASC'
+                            ? 'bg-slate-800 text-white'
+                            : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                        }`}
+                      >
+                        Ascending
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSortDir('DESC')}
+                        className={`flex-1 rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${
+                          sortDir === 'DESC'
+                            ? 'bg-slate-800 text-white'
+                            : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                        }`}
+                      >
+                        Descending
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+
+            {filteredTickets.length === 0 ? (
+              <div className="p-12 text-center rounded-3xl border border-dashed border-slate-200 bg-white">
+                <p className="sc-section-title text-slate-700 mb-1">No tickets match this filter</p>
+                <p className="sc-meta text-slate-500">Try another status or choose &quot;All tickets&quot;.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {displayedTickets.map((ticket) => {
+                  const fileCount = ticket.attachments?.length ?? 0;
+                  const isActive = selectedTicket?.id === ticket.id;
+                  return (
+                    <div
+                      key={ticket.id}
+                      className={`group relative flex overflow-hidden rounded-xl border bg-white transition-all duration-200 ${isActive
+                          ? 'border-sliit-orange shadow-lg ring-2 ring-sliit-orange/30'
+                          : 'border-slate-100 shadow-sm hover:border-slate-200 hover:shadow-md'
+                        }`}
+                    >
+                      <div
+                        className={`w-1 shrink-0 self-stretch ${getPriorityAccentClass(ticket.priority)}`}
+                        aria-hidden
+                        title={`Priority: ${ticket.priority}`}
+                      />
+                      <div className="min-w-0 flex-1 p-4 md:p-5">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="min-w-0 space-y-1.5">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-600">
+                                #{ticket.id}
+                              </span>
+                              <h3 className="text-base font-bold text-sliit-blue transition-colors group-hover:text-sliit-orange md:text-lg">
+                                {ticket.resource?.name || 'Asset ID: ' + ticket.id}
+                              </h3>
+                            </div>
+                            <span className="inline-block w-fit rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+                              {ticket.category || 'General'}
+                            </span>
+                            <div className="sc-meta flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-slate-500">
+                              <span className="font-medium text-slate-700">
+                                {ticket.reporter?.name || 'Reporter'}
+                              </span>
+                              <span className="text-slate-300">·</span>
+                              <span>{format(new Date(ticket.createdAt), 'MMM d · h:mm a')}</span>
+                              {isAdmin ? (
+                                <>
+                                  <span className="text-slate-300">·</span>
+                                  <span className="max-w-[12rem] truncate text-slate-400">{ticket.reporter?.email || '—'}</span>
+                                </>
+                              ) : null}
+                            </div>
+                          </div>
+                          <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-[10px] font-semibold border shadow-sm ${getStatusColor(ticket.status)}`}
+                            >
+                              {ticket.status.replace(/_/g, ' ')}
+                            </span>
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-[10px] font-semibold border shadow-sm ${getPriorityColor(ticket.priority)}`}
+                            >
+                              {ticket.priority}
+                            </span>
+                          </div>
+                        </div>
+
+                        <p className="mt-2 line-clamp-2 text-sm text-slate-600 leading-snug">
+                          {ticket.description}
+                        </p>
+
+                        {ticket.assignee ? (
+                          <div className="mt-2 flex items-center gap-2 rounded-lg border border-slate-100 bg-slate-50/80 px-2 py-1.5">
+                            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sliit-blue text-[10px] font-semibold text-white">
+                              T
+                            </div>
+                            <div className="min-w-0 text-[11px] leading-tight">
+                              <span className="block font-semibold uppercase tracking-wider text-slate-500">Technician</span>
+                              <span className="font-semibold text-sliit-blue">{ticket.assignee.name}</span>
+                            </div>
+                          </div>
+                        ) : null}
+
+                        <div className="mt-3 flex flex-col gap-2 border-t border-slate-100 pt-3 sm:flex-row sm:items-center sm:justify-between">
+                          <div className="flex flex-wrap items-center gap-4 text-[11px] font-medium text-slate-500">
+                            <span className="inline-flex items-center gap-1">
+                              <MessageSquare size={13} className="text-sliit-orange" strokeWidth={2} />
+                              {ticket.comments?.length ?? 0} comments
+                            </span>
+                            <span
+                              className={`inline-flex items-center gap-1 ${fileCount > 0 ? 'font-semibold text-amber-600' : 'text-slate-400'
+                                }`}
+                            >
+                              <ImageIcon size={13} strokeWidth={2} />
+                              {fileCount} {fileCount === 1 ? 'file' : 'files'}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedTicket(ticket)}
+                            className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-blue-50 px-4 py-2 text-xs font-semibold text-sliit-blue transition-all hover:bg-sliit-blue hover:text-white sm:min-w-[9rem]"
+                          >
+                            Open details
+                            <ArrowRight size={14} strokeWidth={2.5} className="transition-transform group-hover:translate-x-0.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
         )}
       </div>
 
