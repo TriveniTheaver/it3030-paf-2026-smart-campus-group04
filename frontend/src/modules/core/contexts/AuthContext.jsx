@@ -46,9 +46,11 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('token', token);
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     const decoded = decodeJwt(token);
-    setCurrentUser({
+    const nextUser = {
       id: decoded.id, name: decoded.name, email: decoded.sub, role: decoded.role
-    });
+    };
+    setCurrentUser(nextUser);
+    return nextUser;
   };
 
   const register = async (name, email, password, role = 'USER') => {

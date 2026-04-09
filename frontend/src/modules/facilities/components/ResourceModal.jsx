@@ -4,6 +4,9 @@ import { X, Save, AlertCircle, Clock, ImageIcon, Globe } from 'lucide-react';
 const buildPayload = (formData, availabilityMode) => {
   const name = (formData.name || '').trim();
   const location = (formData.location || '').trim();
+  if (formData.capacity === '') {
+    throw new Error('Capacity is required.');
+  }
   const cap = Number(formData.capacity);
 
   if (!name) {
@@ -97,7 +100,12 @@ const ResourceModal = ({ isOpen, onClose, onSave, resource, serverError, onClear
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: name === 'capacity' ? parseInt(value, 10) || 0 : value });
+    if (name === 'capacity') {
+      // Allow the user to clear the field while typing (avoid forced "0" prefix).
+      setFormData({ ...formData, [name]: value === '' ? '' : parseInt(value, 10) });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
     setError('');
     onClearServerError?.();
   };
@@ -124,7 +132,7 @@ const ResourceModal = ({ isOpen, onClose, onSave, resource, serverError, onClear
             <span className="w-8 h-8 bg-sliit-orange rounded-lg flex items-center justify-center text-white text-lg">
               {resource ? '✎' : '+'}
             </span>
-            {resource ? 'Enhance Asset Record' : 'Register New Campus Asset'}
+            {resource ? 'Update Resource Details' : 'Add New Campus Resource'}
           </h2>
           <button onClick={onClose} className="hover:bg-white/10 p-2 rounded-full transition-colors">
             <X size={24} />
@@ -256,7 +264,7 @@ const ResourceModal = ({ isOpen, onClose, onSave, resource, serverError, onClear
                 <input 
                   type="text" name="imageUrl"
                   value={formData.imageUrl} onChange={handleChange}
-                  placeholder="e.g. /images/facilities/lab-2.jpg or https://images.unsplash.com/..."
+                  placeholder="e.g. /images/facilities/lab-2.jpg or https://… (leave empty for no photo)"
                   className="w-full bg-white border-slate-100 rounded-xl p-3 border-2 font-semibold text-slate-700 text-sm"
                 />
               </div>
@@ -285,7 +293,7 @@ const ResourceModal = ({ isOpen, onClose, onSave, resource, serverError, onClear
               Discard Changes
             </button>
             <button type="submit" className="flex-2 grow-[2] py-5 bg-sliit-orange text-white rounded-2xl font-semibold hover:bg-orange-600 flex items-center justify-center gap-3 shadow-2xl shadow-orange-500/30 active:scale-95 transition-all text-sm">
-              <Save size={20} /> Deploy Artifact
+              <Save size={20} /> {resource ? 'Update Resource Details' : 'Create Resource'}
             </button>
           </div>
         </form>

@@ -14,6 +14,7 @@ import ForgotPasswordPage from './modules/core/components/auth/ForgotPasswordPag
 import MockGoogleLogin from './modules/core/components/auth/MockGoogleLogin';
 import ProtectedRoute from './modules/core/components/auth/ProtectedRoute';
 import HomePage from './modules/core/components/public/HomePage';
+import { sliitAudienceFromEmail } from './modules/core/utils/sliitAudience';
 
 const Navbar = () => {
   const { currentUser, logout } = useAuth();
@@ -66,13 +67,16 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', onDown);
   }, [opsOpen, campusOpen]);
 
+  const campusAudience =
+    currentUser?.role === 'USER' ? sliitAudienceFromEmail(currentUser.email) : null;
+
   const renderDropdown = (items, open, setOpen, menuRef, label) => (
-    <div className="relative" ref={menuRef}>
+    <div className="relative z-[100]" ref={menuRef}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         className={[
-          'px-5 py-4 text-xs font-semibold transition-all flex items-center gap-1',
+          'px-4 py-3 text-xs font-semibold transition-all flex items-center gap-1',
           open ? 'text-white bg-white/10' : 'text-slate-200 hover:text-white hover:bg-white/5',
         ].join(' ')}
         aria-haspopup="menu"
@@ -111,14 +115,16 @@ const Navbar = () => {
 
   return (
     <header className="flex flex-col relative z-50">
-      <div className="bg-white px-8 py-6 flex justify-between items-center border-b border-slate-200 shadow-sm">
+      <div className="bg-white px-8 py-4 flex justify-between items-center border-b border-slate-200 shadow-sm">
         <div className="flex items-center gap-5 cursor-pointer group" onClick={() => navigate('/')}>
           <div className="flex items-start gap-4">
             <div className="flex flex-col">
-              <span className="text-sliit-blue sc-brand leading-none">SLIIT UNI</span>
-              <span className="text-xs font-medium text-slate-500 mt-1 leading-none">The Knowledge University</span>
+              <span className="text-sliit-logo sc-brand leading-none">SLIIT UNI</span>
+              <span className="text-xs font-medium text-sliit-logo/90 mt-1 leading-none border-t border-sliit-logo/25 pt-1">
+                The Knowledge University
+              </span>
             </div>
-            <div className="h-12 w-px bg-slate-400/70" />
+            <div className="h-12 w-px bg-sliit-logo/25" />
             <span className="text-sliit-blue sc-brand leading-none pt-[1px]">SmartCampus Hub</span>
           </div>
         </div>
@@ -127,8 +133,11 @@ const Navbar = () => {
           {currentUser ? (
             <div className="flex items-center gap-4">
               <div className="text-right hidden sm:block">
-                <p className="text-xs font-medium text-slate-500">Logged in as</p>
-                <p className="sc-body text-sliit-blue">{currentUser.name}</p>
+                <p className="text-sm font-medium text-slate-500">Logged in as</p>
+                {campusAudience ? (
+                  <p className="text-xs font-bold text-sliit-orange uppercase tracking-wide mt-0.5">{campusAudience}</p>
+                ) : null}
+                <p className="text-base font-semibold text-sliit-blue">{currentUser.name}</p>
               </div>
               <div className="h-10 w-10 bg-sliit-light rounded-full flex items-center justify-center border-2 border-sliit-orange shadow-inner">
                 <span className="font-semibold text-sliit-blue">{currentUser.name.charAt(0)}</span>
@@ -140,18 +149,18 @@ const Navbar = () => {
                   logout();
                   navigate('/login');
                 }}
-                className="text-xs font-semibold text-sliit-orange hover:text-orange-600 underline decoration-2 underline-offset-4"
+                className="text-sm font-semibold text-sliit-orange hover:text-orange-600 underline decoration-2 underline-offset-4"
               >
                 Logout
               </button>
             </div>
           ) : (
             <div className="flex flex-col items-end">
-              <span className="text-xs font-medium text-slate-500 mb-1">Log in using your account on:</span>
+              <span className="text-sm font-medium text-slate-500 mb-1">Log in using your account on:</span>
               <button
                 type="button"
                 onClick={() => navigate('/login')}
-                className="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded border border-slate-200 font-semibold text-xs flex items-center gap-2 transition-all shadow-sm"
+                className="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2.5 rounded border border-slate-200 font-semibold text-sm flex items-center gap-2 transition-all shadow-sm"
               >
                 <div className="w-4 h-4 bg-sliit-orange rounded-sm" />
                 SLIIT Login
@@ -165,15 +174,10 @@ const Navbar = () => {
       </div>
 
       <nav className="bg-sliit-grey border-t-4 border-sliit-orange px-8 flex items-center shadow-lg overflow-visible relative z-50">
-        <Link to="/" title="Home" className="p-4 bg-white/10 hover:bg-white/20 text-white transition-colors shrink-0">
+        <Link to="/" title="Home" className="p-3 bg-white/10 hover:bg-white/20 text-white transition-colors shrink-0">
           <div className="w-5 h-5 flex items-center justify-center">🏠</div>
         </Link>
-        <div
-          className={[
-            'flex items-center px-4 space-x-2 min-w-0',
-            currentUser?.role && currentUser.role !== 'ADMIN' ? 'overflow-x-auto no-scrollbar' : '',
-          ].join(' ')}
-        >
+        <div className="flex items-center px-4 space-x-2 min-w-0 overflow-visible">
           {currentUser?.role === 'ADMIN' ? (
             renderDropdown(opsItems, opsOpen, setOpsOpen, opsMenuRef, 'Operations')
           ) : currentUser?.role === 'USER' ? (
@@ -183,7 +187,7 @@ const Navbar = () => {
           ) : (
             <Link
               to="/resources"
-              className="px-5 py-4 text-xs font-semibold text-yellow-400 hover:text-yellow-300 hover:bg-white/5 transition-all"
+              className="px-4 py-3 text-xs font-semibold text-yellow-400 hover:text-yellow-300 hover:bg-white/5 transition-all"
             >
               Resources
             </Link>
@@ -194,28 +198,32 @@ const Navbar = () => {
   );
 };
 
-const userCardClass =
-  'bg-white p-8 rounded-lg shadow hover:shadow-xl transition-all border-t-4 border-slate-200 hover:border-sliit-orange h-full hover:bg-sliit-navy group';
+const dashboardCardClass =
+  'bg-white p-8 rounded-lg shadow border border-slate-100 hover:shadow-xl transition-all border-t-4 border-t-slate-200 hover:border-t-sliit-orange h-full hover:bg-sliit-navy group';
+
+/** Width of one column in a md:grid-cols-3 + gap-8 row (keeps bottom pair aligned with top cards) */
+const dashboardGridThird =
+  'w-full md:w-[calc((100%-4rem)/3)] md:max-w-[calc((100%-4rem)/3)]';
 
 const Dashboard = () => {
   const { currentUser } = useAuth();
 
   const UserPanel = (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-      <Link to="/facilities" className="block outline-none">
-        <div className={userCardClass}>
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+      <Link to="/facilities" className="block outline-none min-w-0">
+        <div className={dashboardCardClass}>
           <h2 className="sc-card-title mb-2 text-sliit-blue group-hover:text-sliit-orange">Browse &amp; Book Resources</h2>
           <p className="sc-meta group-hover:text-slate-200">Request access to lecture halls, meeting rooms, or equipment.</p>
         </div>
       </Link>
-      <Link to="/bookings" className="block outline-none">
-        <div className={userCardClass}>
+      <Link to="/bookings" className="block outline-none min-w-0">
+        <div className={dashboardCardClass}>
           <h2 className="sc-card-title mb-2 text-sliit-blue group-hover:text-sliit-orange">My Active Bookings</h2>
           <p className="sc-meta group-hover:text-slate-200">Manage and view your accepted/pending campus reservations.</p>
         </div>
       </Link>
-      <Link to="/incidents" className="block outline-none md:col-span-2">
-        <div className={userCardClass}>
+      <Link to="/incidents" className="block outline-none min-w-0">
+        <div className={dashboardCardClass}>
           <h2 className="sc-card-title mb-2 text-sliit-blue group-hover:text-sliit-orange">Report an Incident</h2>
           <p className="sc-meta group-hover:text-slate-200">Log tickets for damaged hardware or facility maintenance requests.</p>
         </div>
@@ -223,41 +231,42 @@ const Dashboard = () => {
     </div>
   );
 
-  const adminCardClass =
-    'bg-white p-8 rounded-lg shadow hover:shadow-xl transition-all border-t-4 border-slate-200 hover:border-sliit-orange h-full hover:bg-sliit-navy group';
+  const adminCardClass = dashboardCardClass;
 
   const AdminPanel = (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-      <Link to="/facilities" className="block outline-none">
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+      <Link to="/facilities" className="block outline-none min-w-0">
         <div className={adminCardClass}>
           <h2 className="sc-card-title mb-2 text-sliit-blue group-hover:text-sliit-orange">Manage Catalogue</h2>
           <p className="sc-meta group-hover:text-slate-200">Create brand new campus resources and modify inventory capacities dynamically.</p>
         </div>
       </Link>
-      <Link to="/bookings" className="block outline-none">
+      <Link to="/bookings" className="block outline-none min-w-0">
         <div className={adminCardClass}>
           <h2 className="sc-card-title mb-2 text-sliit-blue group-hover:text-sliit-orange">Booking Queue</h2>
           <p className="sc-meta group-hover:text-slate-200">Review, approve, or reject incoming reservations requested by Students &amp; Staff.</p>
         </div>
       </Link>
-      <Link to="/incidents" className="block outline-none">
+      <Link to="/incidents" className="block outline-none min-w-0">
         <div className={adminCardClass}>
           <h2 className="sc-card-title mb-2 text-sliit-blue group-hover:text-sliit-orange">System Triage</h2>
           <p className="sc-meta group-hover:text-slate-200">Assign maintenance technicians to open operational tickets facility-wide.</p>
         </div>
       </Link>
-      <Link to="/admin/notifications" className="block outline-none">
-        <div className={adminCardClass}>
-          <h2 className="sc-card-title mb-2 text-sliit-blue group-hover:text-sliit-orange">Manage Notifications</h2>
-          <p className="sc-meta group-hover:text-slate-200">Broadcast campus-wide announcements and audit all system-generated alerts.</p>
-        </div>
-      </Link>
-      <Link to="/admin/facilities-analytics" className="block outline-none md:col-span-2">
-        <div className={adminCardClass}>
-          <h2 className="sc-card-title mb-2 text-sliit-blue group-hover:text-sliit-orange">Facilities Analytics</h2>
-          <p className="sc-meta group-hover:text-slate-200">See top resources, peak booking hours, and utilization insights.</p>
-        </div>
-      </Link>
+      <div className="md:col-span-3 flex flex-col md:flex-row flex-wrap justify-center gap-8">
+        <Link to="/admin/notifications" className={`block outline-none min-w-0 shrink-0 ${dashboardGridThird}`}>
+          <div className={adminCardClass}>
+            <h2 className="sc-card-title mb-2 text-sliit-blue group-hover:text-sliit-orange">Manage Notifications</h2>
+            <p className="sc-meta group-hover:text-slate-200">Broadcast campus-wide announcements and audit all system-generated alerts.</p>
+          </div>
+        </Link>
+        <Link to="/admin/facilities-analytics" className={`block outline-none min-w-0 shrink-0 ${dashboardGridThird}`}>
+          <div className={adminCardClass}>
+            <h2 className="sc-card-title mb-2 text-sliit-blue group-hover:text-sliit-orange">Facilities Analytics</h2>
+            <p className="sc-meta group-hover:text-slate-200">See top resources, peak booking hours, and utilization insights.</p>
+          </div>
+        </Link>
+      </div>
     </div>
   );
 
@@ -305,8 +314,8 @@ function App() {
               element={
                 <>
                   <Navbar />
-                  <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-                    <div className="bg-white border border-slate-200/70 rounded-3xl shadow-sm">
+                  <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 w-full">
+                    <div className="bg-white border border-slate-200/70 rounded-3xl shadow-sm w-full max-w-6xl mx-auto">
                       <Outlet />
                     </div>
                   </main>

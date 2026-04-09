@@ -6,6 +6,8 @@
   --color-sliit-orange: #f39c12;
   --color-sliit-light: #f8f9fa;
   --color-sliit-grey: #343a40;
+  /* Official SLIIT wordmark navy (logo-style; use for SLIIT UNI + tagline only) */
+  --color-sliit-logo: #1d2b64;
 }
 
 body {
@@ -41,6 +43,22 @@ body {
   }
   .sc-link {
     @apply text-sm font-semibold;
+  }
+
+  /* Dashboard / incidents “feature” tiles only — navy + orange on hover */
+  /* Pair with `group` on the same element for group-hover children */
+  .sc-interactive-card {
+    @apply bg-white rounded-lg shadow border border-slate-100 border-t-4 border-t-slate-200 transition-all duration-300 hover:border-t-sliit-orange hover:bg-sliit-navy hover:shadow-xl;
+  }
+
+  /* Facility / resource catalogue cards — framed border, light hover; width capped per card */
+  .sc-resource-card {
+    @apply w-full max-w-[19.5rem] sm:max-w-[20.5rem] rounded-xl border-2 border-slate-200/90 bg-white shadow-md shadow-slate-300/25 ring-1 ring-slate-900/[0.04] transition-all duration-300 hover:border-sliit-orange/45 hover:shadow-lg hover:shadow-slate-400/20 hover:-translate-y-0.5;
+  }
+
+  /* Facilities dashboard grid: fill each column; equal card width/height in the CSS grid */
+  .sc-resource-card--fill-grid {
+    @apply max-w-none h-full min-h-0 w-full;
   }
 }
 
