@@ -1,4 +1,30 @@
 # Logs
+# Compiled files
+**/target/
+*.class
+*.jar
+*.war
+*.ear
+
+# IDE files
+.idea/
+*.iml
+.settings/
+.project
+.classpath
+
+# Dependencies
+node_modules/
+package-lock.json  # Add this if you want to ignore it
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Maven wrapper (if using)
+**/maven/
+**/maven.zip
+
 logs
 *.log
 npm-debug.log*
