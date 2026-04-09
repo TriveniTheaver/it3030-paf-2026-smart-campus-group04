@@ -1,8 +1,0 @@
-com\smartcampus\bookings\model\Booking.class
-com\smartcampus\bookings\model\BookingStatus.class
-com\smartcampus\bookings\controller\BookingRequest.class
-com\smartcampus\bookings\repository\BookingRepository.class
-com\smartcampus\bookings\controller\BookingController.class
-com\smartcampus\bookings\service\BookingService.class
-com\smartcampus\bookings\model\Booking$BookingBuilder.class
-com\smartcampus\bookings\controller\BookingController$BookingRequest.class

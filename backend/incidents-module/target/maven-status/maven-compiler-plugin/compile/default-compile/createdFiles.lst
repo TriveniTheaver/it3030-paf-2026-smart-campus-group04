@@ -1,9 +1,0 @@
-com\smartcampus\incidents\controller\TicketController.class
-com\smartcampus\incidents\model\TicketStatus.class
-com\smartcampus\incidents\repository\TicketRepository.class
-com\smartcampus\incidents\service\TicketService.class
-com\smartcampus\incidents\model\Ticket.class
-com\smartcampus\incidents\model\Comment.class
-com\smartcampus\incidents\repository\CommentRepository.class
-com\smartcampus\incidents\model\Comment$CommentBuilder.class
-com\smartcampus\incidents\model\Ticket$TicketBuilder.class
