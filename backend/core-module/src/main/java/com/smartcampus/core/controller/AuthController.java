@@ -40,9 +40,13 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            return ResponseEntity.status(409).body("Email already registered");
+        }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
-        return ResponseEntity.ok("User registered");
+        User saved = userRepository.save(user);
+        String token = jwtService.generateToken(saved);
+        return ResponseEntity.ok(new AuthResponse(token, saved));
     }
 
     public static class LoginRequest {

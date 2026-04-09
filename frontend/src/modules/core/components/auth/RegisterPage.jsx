@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { User, Mail, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { User, Mail, Lock, CheckCircle2, AlertCircle, ArrowLeft } from 'lucide-react';
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -21,8 +21,15 @@ export default function RegisterPage() {
     try {
       await register(name, email, password, requestedRole);
       navigate('/');
-    } catch {
-      setError('Registration failed. The email might already be in use.');
+    } catch (err) {
+      if (err.response?.status === 409) {
+        setError('That email is already registered. Try signing in instead.');
+      } else {
+        const data = err.response?.data;
+        setError(
+          typeof data === 'string' ? data : data?.message || 'Registration failed. Please try again.',
+        );
+      }
     }
     setLoading(false);
   };
@@ -30,6 +37,13 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-sliit-light flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden p-8">
+
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-sliit-navy transition-colors mb-6"
+        >
+          <ArrowLeft className="w-4 h-4" /> Back to Home
+        </Link>
         
         <div className="text-center mb-8">
           <h1 className="sc-page-title text-sliit-navy mb-2">Create Account</h1>

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
-import { BarChart3, Clock, TrendingUp } from 'lucide-react';
+import { BarChart3, Clock, TrendingUp, CheckCircle2, TimerReset } from 'lucide-react';
 
 const fmtPct = (v) => `${Math.round((Number(v) || 0) * 100)}%`;
 
@@ -45,6 +45,10 @@ export default function AdminFacilitiesAnalytics() {
     );
   }, [data]);
 
+  const summary = data?.summary;
+  const fromLabel = data?.from ? new Date(data.from).toLocaleDateString() : '';
+  const toLabel = data?.to ? new Date(data.to).toLocaleDateString() : '';
+
   return (
     <div className="p-8 max-w-6xl mx-auto animate-in fade-in duration-500">
       <div className="flex items-center gap-4 mb-10">
@@ -53,7 +57,9 @@ export default function AdminFacilitiesAnalytics() {
         </div>
         <div className="min-w-0">
           <h1 className="sc-page-title text-sliit-navy">Facilities analytics</h1>
-          <p className="sc-meta">Usage insights based on approved bookings.</p>
+          <p className="sc-meta">
+            Decision-ready insights for campus resource demand (past window) + operational workload (upcoming).
+          </p>
         </div>
         <div className="ml-auto flex items-center gap-3">
           <label className="sc-label">Window</label>
@@ -77,6 +83,47 @@ export default function AdminFacilitiesAnalytics() {
         </div>
       ) : (
         <>
+          <div className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-xl mb-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div className="min-w-0">
+                <p className="sc-label text-slate-600">Reporting window</p>
+                <p className="font-semibold text-slate-800 text-sm truncate">
+                  {fromLabel} → {toLabel}
+                </p>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full md:w-auto">
+                <div className="rounded-2xl border border-slate-100 bg-slate-50/40 p-4">
+                  <div className="flex items-center gap-2 text-emerald-700">
+                    <CheckCircle2 size={16} />
+                    <p className="sc-label">Approved</p>
+                  </div>
+                  <p className="text-2xl font-extrabold text-slate-900 mt-1">{Number(summary?.approvedTotal || 0)}</p>
+                </div>
+                <div className="rounded-2xl border border-slate-100 bg-slate-50/40 p-4">
+                  <div className="flex items-center gap-2 text-sliit-blue">
+                    <TrendingUp size={16} />
+                    <p className="sc-label">Pending</p>
+                  </div>
+                  <p className="text-2xl font-extrabold text-slate-900 mt-1">{Number(summary?.pendingTotal || 0)}</p>
+                </div>
+                <div className="rounded-2xl border border-slate-100 bg-slate-50/40 p-4">
+                  <div className="flex items-center gap-2 text-rose-700">
+                    <TimerReset size={16} />
+                    <p className="sc-label">Rejected</p>
+                  </div>
+                  <p className="text-2xl font-extrabold text-slate-900 mt-1">{Number(summary?.rejectedTotal || 0)}</p>
+                </div>
+                <div className="rounded-2xl border border-slate-100 bg-slate-50/40 p-4">
+                  <div className="flex items-center gap-2 text-slate-600">
+                    <TimerReset size={16} />
+                    <p className="sc-label">Cancelled</p>
+                  </div>
+                  <p className="text-2xl font-extrabold text-slate-900 mt-1">{Number(summary?.cancelledTotal || 0)}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
             <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-xl">
               <div className="flex items-center gap-3 mb-4 text-sliit-blue">
@@ -85,7 +132,7 @@ export default function AdminFacilitiesAnalytics() {
               </div>
               <div className="space-y-4">
                 {(data?.topResources || []).length === 0 ? (
-                  <p className="sc-meta">No approved bookings in this window.</p>
+                  <p className="sc-meta">No approved bookings found.</p>
                 ) : (
                   (data?.topResources || []).map((r) => (
                     <div key={r.resourceId} className="flex items-center justify-between gap-4">
@@ -111,7 +158,7 @@ export default function AdminFacilitiesAnalytics() {
               <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-5">
                 <div>
                   <p className="sc-meta">
-                    Heatmap of approved booking start times across 24 hours (0–23). Hover any hour for details.
+                    Heatmap of approved booking start times across 24 hours (0–23) across all approved bookings.
                   </p>
                   {peakBest && Number(peakBest?.approvedBookings || 0) > 0 ? (
                     <p className="sc-label mt-2">

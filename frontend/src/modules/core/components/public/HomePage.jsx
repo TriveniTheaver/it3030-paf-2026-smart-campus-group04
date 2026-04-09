@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { sliitAudienceFromEmail } from '../../utils/sliitAudience';
 import axios from 'axios';
-import { Monitor, ArrowRight, Activity, MapPin, Users, LayoutGrid } from 'lucide-react';
+import { Monitor, ArrowRight, MapPin, Users, LayoutGrid, Clock, Image as ImageIcon } from 'lucide-react';
 
 export default function HomePage() {
   const { currentUser } = useAuth();
@@ -37,28 +38,48 @@ export default function HomePage() {
       .finally(() => setLoading(false));
   }, []);
 
+  const campusAudience =
+    currentUser?.role === 'USER' ? sliitAudienceFromEmail(currentUser.email) : null;
+
   return (
     <div className="min-h-screen bg-transparent flex flex-col font-sans animate-in fade-in duration-700">
       {/* Navbar Overlay Base - Matching official white header */}
-      <nav className="bg-white border-b border-slate-100 px-8 py-5 flex justify-between items-center text-sliit-blue relative z-20 shadow-sm">
+      <nav className="bg-white border-b border-slate-100 px-8 py-3.5 flex justify-between items-center text-sliit-blue relative z-20 shadow-sm">
         <div className="flex items-center gap-5 cursor-pointer group" onClick={() => navigate('/')}>
           <div className="flex items-start gap-4">
             <div className="flex flex-col">
-              <span className="text-sliit-blue sc-brand leading-none">SLIIT UNI</span>
-              <span className="text-xs font-medium text-slate-500 mt-1 leading-none">The Knowledge University</span>
+              <span className="text-sliit-logo sc-brand leading-none">SLIIT UNI</span>
+              <span className="text-xs font-medium text-sliit-logo/90 mt-1 leading-none border-t border-sliit-logo/25 pt-1">
+                The Knowledge University
+              </span>
             </div>
-            <div className="h-12 w-px bg-slate-400/70" />
+            <div className="h-12 w-px bg-sliit-logo/25" />
             <span className="text-sliit-blue sc-brand leading-none pt-[1px]">SmartCampus Hub</span>
           </div>
         </div>
         <div className="flex items-center gap-8">
            {currentUser ? (
               <div className="flex items-center gap-4">
-                <span className="text-xs font-medium text-sliit-blue">Hi, {currentUser.name}</span>
-                <Link to="/dashboard" className="text-xs font-semibold bg-sliit-orange hover:bg-orange-500 text-white px-5 py-2.5 rounded shadow-lg transition-all active:scale-95">Go to Dashboard</Link>
+                <div className="flex flex-col items-end gap-0.5 text-right">
+                  {campusAudience ? (
+                    <span className="text-xs font-bold text-sliit-orange uppercase tracking-wide">{campusAudience}</span>
+                  ) : null}
+                  <span className="text-sm font-medium text-sliit-blue">Hi, {currentUser.name}</span>
+                </div>
+                <Link
+                  to="/dashboard"
+                  className="text-sm font-semibold bg-sliit-orange hover:bg-orange-500 text-white px-6 py-3 rounded-lg shadow-lg transition-all active:scale-95"
+                >
+                  Go to Dashboard
+                </Link>
               </div>
            ) : (
-              <Link to="/login" className="text-xs font-semibold bg-sliit-orange hover:bg-orange-500 text-white px-6 py-3 rounded shadow-xl transition-all active:scale-95">Sign In</Link>
+              <Link
+                to="/login"
+                className="text-sm font-semibold bg-sliit-orange hover:bg-orange-500 text-white px-7 py-3.5 rounded-lg shadow-xl transition-all active:scale-95"
+              >
+                Sign In
+              </Link>
            )}
         </div>
       </nav>
@@ -122,7 +143,7 @@ export default function HomePage() {
             </p>
           </div>
           <Link to="/resources" className="sc-link flex items-center gap-3 text-sliit-blue hover:gap-5 transition-all group pb-2 border-b-2 border-transparent hover:border-sliit-blue">
-            Launch Full Explorer <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+            Explore more <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 
@@ -132,31 +153,62 @@ export default function HomePage() {
             <span className="font-semibold text-xs text-slate-300">Synchronizing live data…</span>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-            {facilities.length > 0 ? facilities.slice(0, 6).map(fac => (
-              <div key={fac.id} className="bg-white rounded-[2rem] overflow-hidden shadow-xl shadow-slate-200/50 border border-slate-100 hover:shadow-2xl hover:border-orange-500/20 transition-all group flex flex-col h-full active:scale-[0.98]">
-                <div className={`h-2.5 w-full transition-all group-hover:h-4 ${fac.type === 'LAB' ? 'bg-sliit-blue' : fac.type === 'LECTURE_HALL' ? 'bg-sliit-orange' : 'bg-slate-800'}`}></div>
-                <div className="p-10 flex flex-col flex-grow">
-                  <div className="flex justify-between items-start mb-8">
-                    <h3 className="sc-card-title text-slate-800 group-hover:text-sliit-blue transition-colors">{fac.name}</h3>
-                    <span className={`px-4 py-1.5 text-[11px] font-semibold rounded-full shadow-sm border ${fac.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-rose-50 text-rose-700 border-rose-100'}`}>
-                      {fac.status.replace(/_/g, ' ')}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 items-stretch">
+            {facilities.length > 0 ? facilities.slice(0, 3).map(fac => {
+              const hasImage = fac.imageUrl && String(fac.imageUrl).trim() !== '';
+              return (
+              <div key={fac.id} className="min-w-0 flex justify-center h-full">
+                <div className="group sc-resource-card flex w-full flex-col overflow-hidden h-full active:scale-[0.98]">
+                <div className="relative h-40 min-h-[10rem] max-h-[10rem] flex-none overflow-hidden bg-slate-100">
+                  {hasImage ? (
+                    <img
+                      src={fac.imageUrl}
+                      alt={fac.name}
+                      className="absolute inset-0 block h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 gap-2 pointer-events-none">
+                      <ImageIcon size={36} strokeWidth={1.25} aria-hidden />
+                      <span className="text-xs font-semibold tracking-wide uppercase">No photo</span>
+                    </div>
+                  )}
+                  <div className={`absolute top-4 left-4 px-3 py-1.5 rounded-full text-[11px] font-semibold backdrop-blur-md border border-white/20 shadow-lg ${fac.status === 'ACTIVE' ? 'bg-emerald-500/85 text-white' : 'bg-rose-500/85 text-white'}`}>
+                    {fac.status.replace(/_/g, ' ')}
+                  </div>
+                </div>
+                <div className="p-7 flex flex-col flex-1 min-h-0">
+                  <div className="flex justify-between items-center gap-3 mb-4">
+                    <span className="sc-label text-sliit-blue border-2 border-blue-50 bg-blue-50/30 px-3 py-1 rounded-full">
+                      {(fac.type || 'RESOURCE').replace(/_/g, ' ')}
                     </span>
-                  </div>
-                  <div className="grid grid-cols-1 gap-4 mb-10">
-                    <div className="flex items-center sc-meta bg-slate-50 p-4 rounded-2xl group-hover:bg-slate-100/80 transition-colors">
-                      <MapPin className="w-5 h-5 mr-4 text-sliit-orange" /> {fac.location || 'Distributed'}
-                    </div>
-                    <div className="flex items-center sc-meta bg-slate-50 p-4 rounded-2xl group-hover:bg-slate-100/80 transition-colors">
-                      <Users className="w-5 h-5 mr-4 text-sliit-blue" /> {fac.capacity || 'N/A'} Seats Available
+                    <div className="flex items-center gap-1.5 sc-meta text-slate-500 shrink-0">
+                      <Clock size={14} className="text-sliit-orange" />
+                      {fac.availableFrom && fac.availableTo
+                        ? `${fac.availableFrom.substring(0, 5)}–${fac.availableTo.substring(0, 5)}`
+                        : '24/7'}
                     </div>
                   </div>
-                  <Link to="/resources" className="block w-full text-center py-4 bg-slate-900 hover:bg-sliit-navy text-white font-semibold text-sm rounded-xl transition-all shadow-lg shadow-slate-900/20 transform group-hover:-translate-y-1">
+                  <h3 className="sc-card-title text-slate-900 mb-5 line-clamp-2">{fac.name}</h3>
+                  <div className="grid grid-cols-1 gap-3 mb-8 flex-1">
+                    <div className="flex items-start gap-3 sc-meta bg-slate-50 p-4 rounded-2xl border border-slate-100 group-hover:bg-slate-100/80 transition-colors">
+                      <MapPin className="w-5 h-5 text-sliit-orange shrink-0 mt-0.5" />
+                      <span className="line-clamp-2">{fac.location || 'Distributed'}</span>
+                    </div>
+                    <div className="flex items-center gap-3 sc-meta bg-slate-50 p-4 rounded-2xl border border-slate-100 group-hover:bg-slate-100/80 transition-colors">
+                      <Users className="w-5 h-5 text-sliit-blue shrink-0" />
+                      <span>{fac.capacity ?? 'N/A'} seats</span>
+                    </div>
+                  </div>
+                  <Link
+                    to="/resources"
+                    className="mt-auto block w-full text-center py-3.5 bg-slate-900 hover:bg-sliit-orange text-white font-semibold text-sm rounded-xl transition-all shadow-lg shadow-slate-900/20"
+                  >
                     Book & Request
                   </Link>
                 </div>
+                </div>
               </div>
-            )) : (
+            );}) : (
               <div className="col-span-full text-center py-24 bg-white rounded-[3rem] border-4 border-slate-100 border-dashed">
                 <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-300 shadow-inner">
                   <Monitor size={40} />
