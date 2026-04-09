@@ -87,6 +87,16 @@ const BookingsDashboard = () => {
     );
   };
 
+  const getCardColorTheme = (status) => {
+    const themes = {
+      APPROVED: 'border-b-[8px] border-b-emerald-500 border-r-[4px] border-r-emerald-600/20 shadow-emerald-500/10 hover:shadow-emerald-500/20',
+      PENDING: 'border-b-[8px] border-b-amber-500 border-r-[4px] border-r-amber-600/20 shadow-amber-500/10 hover:shadow-amber-500/20',
+      REJECTED: 'border-b-[8px] border-b-rose-500 border-r-[4px] border-r-rose-600/20 shadow-rose-500/10 hover:shadow-rose-500/20',
+      CANCELLED: 'border-b-[8px] border-b-slate-400 border-r-[4px] border-r-slate-500/20 shadow-slate-500/10 hover:shadow-slate-500/20'
+    };
+    return themes[status] || themes.CANCELLED;
+  };
+
   const renderCalendar = () => {
     if (currentUser?.role !== 'ADMIN') return null;
 
@@ -234,7 +244,7 @@ const BookingsDashboard = () => {
             displayedBookings.map((booking) => (
               <div
                 key={booking.id}
-                className="bg-white/90 backdrop-blur-xl rounded-lg p-10 border border-slate-100 border-t-4 border-t-slate-200 shadow-xl shadow-slate-300/30 flex flex-col xl:flex-row gap-10 items-start xl:items-center relative animate-in slide-in-from-bottom-4 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:border-t-sliit-orange hover:bg-sliit-navy group"
+                className={`bg-white/90 backdrop-blur-xl rounded-lg p-10 border border-slate-100 border-t-4 border-t-slate-200 shadow-xl shadow-slate-300/30 flex flex-col xl:flex-row gap-10 items-start xl:items-center relative animate-in slide-in-from-bottom-4 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:border-t-sliit-orange hover:bg-sliit-navy group ${getCardColorTheme(booking.status)}`}
               >
 
                 <div className="flex-1 space-y-6">

@@ -202,7 +202,6 @@ const Navbar = () => {
 const dashboardCardClass =
   'bg-white p-8 rounded-lg shadow border border-slate-100 hover:shadow-xl transition-all border-t-4 border-t-slate-200 hover:border-t-sliit-orange h-full hover:bg-sliit-navy group';
 
-/** Width of one column in a md:grid-cols-3 + gap-8 row (keeps bottom pair aligned with top cards) */
 const dashboardGridThird =
   'w-full md:w-[calc((100%-4rem)/3)] md:max-w-[calc((100%-4rem)/3)]';
 
