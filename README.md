@@ -25,6 +25,12 @@ mvn spring-boot:run
 
 Configuration: `backend/web-app/src/main/resources/application.yml` (H2 in-memory by default). Replace Google OAuth placeholders for real Google sign-in.
 
+Configuration: `backend/web-app/src/main/resources/application.yml` (MySQL by default).
+
+- **Default DB**: MySQL at `jdbc:mysql://localhost:3306/smartcampus` (see env vars `SMARTCAMPUS_DB_URL`, `SMARTCAMPUS_DB_USERNAME`, `SMARTCAMPUS_DB_PASSWORD`)
+- **Local override**: `backend/web-app/src/main/resources/application-local.yml` is imported automatically (gitignored) and can override secrets like DB password.
+- **Schema**: `spring.jpa.hibernate.ddl-auto=update` (creates/updates tables automatically for dev)
+
 ### Seeded accounts (development)
 
 | Email            | Password    | Role        |
