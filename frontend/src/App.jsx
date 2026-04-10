@@ -15,6 +15,7 @@ import MockGoogleLogin from './modules/core/components/auth/MockGoogleLogin';
 import ProtectedRoute from './modules/core/components/auth/ProtectedRoute';
 import HomePage from './modules/core/components/public/HomePage';
 import { sliitAudienceFromEmail } from './modules/core/utils/sliitAudience';
+import { BarChart3, Bell, CalendarCheck2, LayoutGrid, Wrench } from 'lucide-react';
 
 const Navbar = () => {
   const { currentUser, logout } = useAuth();
@@ -231,38 +232,63 @@ const Dashboard = () => {
     </div>
   );
 
-  const adminCardClass = dashboardCardClass;
+  const adminCardClass = `${dashboardCardClass} transform hover:-translate-y-0.5`;
 
   const AdminPanel = (
     <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
       <Link to="/facilities" className="block outline-none min-w-0">
         <div className={adminCardClass}>
-          <h2 className="sc-card-title mb-2 text-sliit-blue group-hover:text-sliit-orange">Manage Catalogue</h2>
+          <div className="flex items-start gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-sliit-blue transition-colors group-hover:bg-white/10 group-hover:border-white/15 group-hover:text-sliit-orange">
+              <LayoutGrid className="w-5 h-5" />
+            </div>
+            <h2 className="sc-card-title text-sliit-blue group-hover:text-sliit-orange">Manage Catalogue</h2>
+          </div>
           <p className="sc-meta group-hover:text-slate-200">Create brand new campus resources and modify inventory capacities dynamically.</p>
         </div>
       </Link>
       <Link to="/bookings" className="block outline-none min-w-0">
         <div className={adminCardClass}>
-          <h2 className="sc-card-title mb-2 text-sliit-blue group-hover:text-sliit-orange">Booking Queue</h2>
+          <div className="flex items-start gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-sliit-blue transition-colors group-hover:bg-white/10 group-hover:border-white/15 group-hover:text-sliit-orange">
+              <CalendarCheck2 className="w-5 h-5" />
+            </div>
+            <h2 className="sc-card-title text-sliit-blue group-hover:text-sliit-orange">Booking Queue</h2>
+          </div>
           <p className="sc-meta group-hover:text-slate-200">Review, approve, or reject incoming reservations requested by Students &amp; Staff.</p>
         </div>
       </Link>
       <Link to="/incidents" className="block outline-none min-w-0">
         <div className={adminCardClass}>
-          <h2 className="sc-card-title mb-2 text-sliit-blue group-hover:text-sliit-orange">System Triage</h2>
+          <div className="flex items-start gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-sliit-blue transition-colors group-hover:bg-white/10 group-hover:border-white/15 group-hover:text-sliit-orange">
+              <Wrench className="w-5 h-5" />
+            </div>
+            <h2 className="sc-card-title text-sliit-blue group-hover:text-sliit-orange">System Triage</h2>
+          </div>
           <p className="sc-meta group-hover:text-slate-200">Assign maintenance technicians to open operational tickets facility-wide.</p>
         </div>
       </Link>
       <div className="md:col-span-3 flex flex-col md:flex-row flex-wrap justify-center gap-8">
         <Link to="/admin/notifications" className={`block outline-none min-w-0 shrink-0 ${dashboardGridThird}`}>
           <div className={adminCardClass}>
-            <h2 className="sc-card-title mb-2 text-sliit-blue group-hover:text-sliit-orange">Manage Notifications</h2>
+            <div className="flex items-start gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-sliit-blue transition-colors group-hover:bg-white/10 group-hover:border-white/15 group-hover:text-sliit-orange">
+                <Bell className="w-5 h-5" />
+              </div>
+              <h2 className="sc-card-title text-sliit-blue group-hover:text-sliit-orange">Manage Notifications</h2>
+            </div>
             <p className="sc-meta group-hover:text-slate-200">Broadcast campus-wide announcements and audit all system-generated alerts.</p>
           </div>
         </Link>
         <Link to="/admin/facilities-analytics" className={`block outline-none min-w-0 shrink-0 ${dashboardGridThird}`}>
           <div className={adminCardClass}>
-            <h2 className="sc-card-title mb-2 text-sliit-blue group-hover:text-sliit-orange">Facilities Analytics</h2>
+            <div className="flex items-start gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-sliit-blue transition-colors group-hover:bg-white/10 group-hover:border-white/15 group-hover:text-sliit-orange">
+                <BarChart3 className="w-5 h-5" />
+              </div>
+              <h2 className="sc-card-title text-sliit-blue group-hover:text-sliit-orange">Facilities Analytics</h2>
+            </div>
             <p className="sc-meta group-hover:text-slate-200">See top resources, peak booking hours, and utilization insights.</p>
           </div>
         </Link>

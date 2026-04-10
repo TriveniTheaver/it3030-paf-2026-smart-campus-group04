@@ -29,20 +29,19 @@ public class FacilitiesAnalyticsService {
 
     public FacilitiesAnalyticsResponse build(int windowDays, LocalDateTime now) {
         int days = Math.max(1, Math.min(365, windowDays));
-        // Admins care about both historical and upcoming approvals.
-        // For charts that need a time axis, use a symmetric window around "now".
+        // Reporting window = past N days (decision-ready and easy to explain in viva).
         LocalDateTime from = now.minusDays(days);
-        LocalDateTime to = now.plusDays(days);
+        LocalDateTime to = now;
 
         List<FacilitiesAnalyticsResponse.TopResource> topResources = bookingRepository
-                .topResourcesByApprovedBookingsAllTime()
+                .topResourcesByApprovedBookings(from, to)
                 .stream()
                 .limit(8)
                 .map(r -> new FacilitiesAnalyticsResponse.TopResource(r.getResourceId(), r.getResourceName(), r.getBookingCount()))
                 .toList();
 
         long[] hourCounts = new long[24];
-        for (BookingRepository.HourCountRow row : bookingRepository.peakHoursByApprovedBookingsAllTime()) {
+        for (BookingRepository.HourCountRow row : bookingRepository.peakHoursByApprovedBookings(from, to)) {
             Integer hour = row.getHour();
             if (hour != null && hour >= 0 && hour <= 23) {
                 hourCounts[hour] = row.getBookingCount() == null ? 0 : row.getBookingCount();
@@ -72,8 +71,7 @@ public class FacilitiesAnalyticsService {
             if (rid == null) continue;
             int availableMins = availableMinutesPerDay(r.getAvailableFrom(), r.getAvailableTo());
             long booked = bookedMinutesByResource.getOrDefault(rid, 0L);
-            // Use the chart window length (past+future) for utilization to keep it consistent with bookedMinutesByResource.
-            double denom = (double) availableMins * (double) (days * 2);
+            double denom = (double) availableMins * (double) days;
             double score = denom <= 0 ? 0.0 : Math.min(1.0, Math.max(0.0, booked / denom));
             utilization.add(new FacilitiesAnalyticsResponse.ResourceUtilization(
                     rid,
@@ -89,15 +87,15 @@ public class FacilitiesAnalyticsService {
         }
 
         FacilitiesAnalyticsResponse.Summary summary = new FacilitiesAnalyticsResponse.Summary(
-                bookingRepository.countByStatus(BookingStatus.APPROVED),
-                bookingRepository.countByStatus(BookingStatus.PENDING),
-                bookingRepository.countByStatus(BookingStatus.REJECTED),
-                bookingRepository.countByStatus(BookingStatus.CANCELLED)
+                bookingRepository.countByStatusStartingBetween(BookingStatus.APPROVED, from, to),
+                bookingRepository.countByStatusStartingBetween(BookingStatus.PENDING, from, to),
+                bookingRepository.countByStatusStartingBetween(BookingStatus.REJECTED, from, to),
+                bookingRepository.countByStatusStartingBetween(BookingStatus.CANCELLED, from, to)
         );
 
-        // New: "most booked resources over time" (approved) for top 3 resources, within the symmetric chart window.
+        // "Most booked resources over time" (approved) for top 3 resources, within the reporting window.
         List<FacilitiesAnalyticsResponse.ResourceDailySeries> series = new ArrayList<>();
-        List<BookingRepository.ResourceBookingCountRow> top3 = bookingRepository.topResourcesByApprovedBookingsAllTime()
+        List<BookingRepository.ResourceBookingCountRow> top3 = bookingRepository.topResourcesByApprovedBookings(from, to)
                 .stream()
                 .limit(3)
                 .toList();
