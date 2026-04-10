@@ -3,6 +3,7 @@ package com.smartcampus.bookings.service;
 import com.smartcampus.bookings.model.Booking;
 import com.smartcampus.bookings.model.BookingStatus;
 import com.smartcampus.bookings.repository.BookingRepository;
+import com.smartcampus.core.model.Role;
 import com.smartcampus.core.model.User;
 import com.smartcampus.core.repository.UserRepository;
 import com.smartcampus.core.service.NotificationService;
@@ -78,6 +79,19 @@ public class BookingService {
                 user.getId(),
                 "Review Pending: Your request for " + resource.getName() + " has been submitted."
         );
+
+        String who = user.getName() != null && !user.getName().isBlank() ? user.getName() : user.getEmail();
+        String dateStr = saved.getStartTime() != null ? saved.getStartTime().toLocalDate().toString() : "N/A";
+        String adminMsg = String.format(
+                "New booking request #%d: %s on %s (requested by %s). Review in Bookings.",
+                saved.getId(),
+                resource.getName(),
+                dateStr,
+                who
+        );
+        for (User admin : userRepository.findByRole(Role.ADMIN)) {
+            notificationService.createNotification(admin.getId(), adminMsg);
+        }
 
         return saved;
     }

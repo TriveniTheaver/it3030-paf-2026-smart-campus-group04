@@ -27,18 +27,43 @@ const NotificationPanel = () => {
   }, [currentUser, fetchNotifications]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
+  /* eslint-disable react-hooks/set-state-in-effect -- refetch when panel opens */
+  useEffect(() => {
+    if (currentUser && isOpen) {
+      fetchNotifications();
+    }
+  }, [currentUser, isOpen, fetchNotifications]);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  const isUnread = (n) => n.readStatus !== true && n.readStatus !== 'true';
+
   const markAsRead = async (id) => {
     try {
       await axios.put(`/api/notifications/${id}/read`);
-      setNotifications(notifications.map(n => n.id === id ? { ...n, readStatus: true } : n));
+      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, readStatus: true } : n)));
     } catch (err) {
       console.error('Failed to mark as read', err);
     }
   };
 
+  const handleNotificationClick = (notif) => {
+    if (isUnread(notif)) {
+      markAsRead(notif.id);
+    }
+  };
+
+  const clearAllHistory = async () => {
+    try {
+      await axios.delete('/api/notifications/mine');
+      setNotifications([]);
+    } catch (err) {
+      console.error('Failed to clear notifications', err);
+    }
+  };
+
   if (!currentUser) return null;
 
-  const unreadCount = notifications.filter(n => !n.readStatus).length;
+  const unreadCount = notifications.filter(isUnread).length;
   const togglePanel = () => setIsOpen(!isOpen);
 
   return (
@@ -78,15 +103,23 @@ const NotificationPanel = () => {
               </div>
             ) : (
               notifications.map(notif => (
-                <div 
-                  key={notif.id} 
-                  onClick={() => !notif.readStatus && markAsRead(notif.id)}
-                  className={`p-6 border-b border-slate-50 transition-all cursor-pointer hover:bg-slate-50 ${notif.readStatus ? 'opacity-60' : 'bg-blue-50/30'}`}
+                <div
+                  key={notif.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => handleNotificationClick(notif)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleNotificationClick(notif);
+                    }
+                  }}
+                  className={`p-6 border-b border-slate-50 transition-all cursor-pointer hover:bg-slate-50 ${isUnread(notif) ? 'bg-blue-50/30' : 'opacity-60'}`}
                 >
                   <div className="flex gap-4">
-                    <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${notif.readStatus ? 'bg-slate-300' : 'bg-sliit-orange animate-pulse'}`}></div>
+                    <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${isUnread(notif) ? 'bg-sliit-orange animate-pulse' : 'bg-slate-300'}`}></div>
                     <div className="space-y-1">
-                      <p className={`text-sm ${notif.readStatus ? 'font-medium text-slate-600' : 'font-semibold text-sliit-blue'}`}>
+                      <p className={`text-sm ${isUnread(notif) ? 'font-semibold text-sliit-blue' : 'font-medium text-slate-600'}`}>
                         {notif.message}
                       </p>
                       <p className="sc-label">
@@ -99,7 +132,14 @@ const NotificationPanel = () => {
             )}
           </div>
           <div className="p-4 bg-slate-50 text-center border-t border-slate-100">
-            <button type="button" className="sc-link text-sliit-blue hover:text-sliit-navy transition-colors text-xs">Clear all history</button>
+            <button
+              type="button"
+              onClick={clearAllHistory}
+              disabled={notifications.length === 0}
+              className="sc-link text-sliit-blue hover:text-sliit-navy transition-colors text-xs disabled:opacity-40 disabled:pointer-events-none"
+            >
+              Clear all history
+            </button>
           </div>
         </div>
       )}

@@ -44,7 +44,12 @@ const BookingsDashboard = () => {
 
     setProcessingId(id);
     try {
-      await axios.put(`/api/bookings/${id}/status?status=${status}&reason=${reason}`);
+      await axios.put(`/api/bookings/${id}/status`, null, {
+        params: {
+          status,
+          ...(reason !== undefined && reason !== '' ? { reason } : {}),
+        },
+      });
       fetchBookings();
     } catch (error) {
       alert('Operation failed. Please try again.');

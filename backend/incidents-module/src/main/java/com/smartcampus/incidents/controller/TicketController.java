@@ -37,7 +37,7 @@ public class TicketController {
         if (principal == null) {
             throw new IllegalArgumentException("Not authenticated");
         }
-        return userRepository.findByEmail(principal.getName())
+        return userRepository.findByEmailIgnoreCase(principal.getName().trim())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 

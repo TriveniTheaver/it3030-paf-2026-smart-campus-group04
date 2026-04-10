@@ -8,20 +8,31 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Component
 public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final String frontendBaseUrl;
 
-    public OAuth2LoginSuccessHandler(UserRepository userRepository, JwtService jwtService) {
+    public OAuth2LoginSuccessHandler(
+            UserRepository userRepository,
+            JwtService jwtService,
+            @Value("${smartcampus.frontend-base-url:http://localhost:5173}") String frontendBaseUrl
+    ) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
+        this.frontendBaseUrl = frontendBaseUrl.endsWith("/")
+                ? frontendBaseUrl.substring(0, frontendBaseUrl.length() - 1)
+                : frontendBaseUrl;
     }
 
     @Override
@@ -35,13 +46,14 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         String name = oauthUser.getAttribute("name");
 
         if (email == null || email.isBlank()) {
-            getRedirectStrategy().sendRedirect(request, response, "http://localhost:5173/login?error=OAuthEmailMissing");
+            getRedirectStrategy().sendRedirect(request, response,
+                    frontendBaseUrl + "/login?error=OAuthEmailMissing");
             return;
         }
 
         String effectiveName = (name == null || name.isBlank()) ? email : name;
 
-        User user = userRepository.findByEmail(email).orElseGet(() -> userRepository.save(
+        User user = userRepository.findByEmailIgnoreCase(email.trim()).orElseGet(() -> userRepository.save(
                 User.builder()
                         .email(email)
                         .name(effectiveName)
@@ -50,7 +62,8 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         ));
 
         String token = jwtService.generateToken(user);
-        getRedirectStrategy().sendRedirect(request, response, "http://localhost:5173/oauth/callback?token=" + token);
+        String url = frontendBaseUrl + "/oauth/callback?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8);
+        getRedirectStrategy().sendRedirect(request, response, url);
     }
 }
 

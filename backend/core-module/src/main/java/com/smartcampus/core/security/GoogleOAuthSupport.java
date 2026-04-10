@@ -18,8 +18,14 @@ public final class GoogleOAuthSupport {
         if (env == null) {
             return false;
         }
-        String clientId = env.getProperty(CLIENT_ID_KEY);
-        String clientSecret = env.getProperty(CLIENT_SECRET_KEY);
+        String clientId = firstNonBlank(
+                env.getProperty(CLIENT_ID_KEY),
+                System.getenv("SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID"),
+                System.getenv("GOOGLE_CLIENT_ID"));
+        String clientSecret = firstNonBlank(
+                env.getProperty(CLIENT_SECRET_KEY),
+                System.getenv("SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET"),
+                System.getenv("GOOGLE_CLIENT_SECRET"));
         if (clientId == null || clientId.isBlank() || clientSecret == null || clientSecret.isBlank()) {
             return false;
         }
@@ -35,5 +41,17 @@ public final class GoogleOAuthSupport {
             return false;
         }
         return id.endsWith(".apps.googleusercontent.com");
+    }
+
+    private static String firstNonBlank(String... values) {
+        if (values == null) {
+            return null;
+        }
+        for (String v : values) {
+            if (v != null && !v.isBlank()) {
+                return v;
+            }
+        }
+        return null;
     }
 }

@@ -23,9 +23,27 @@ spring:
     console:
       enabled: false
 
+  # Google OAuth: optional. Prefer secrets in gitignored application-local.yml (see example file).
+  # You can also set env vars GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET (or Spring-standard names below).
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:}
+            client-secret: ${GOOGLE_CLIENT_SECRET:}
+            scope:
+              - openid
+              - profile
+              - email
+
   # Google Sign-In is optional. Do not put OAuth secrets in this file (Git).
   # Copy application-local.yml.example → application-local.yml and add your Web client id/secret,
   # or set SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID and ..._CLIENT_SECRET.
 
 server:
   port: 8081
+
+# Used for OAuth success redirect and links in logs. Override with FRONTEND_BASE_URL in production.
+smartcampus:
+  frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:5173}

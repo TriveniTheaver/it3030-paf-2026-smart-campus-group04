@@ -12,6 +12,9 @@
 # Alternative (no file): set environment variables before starting the backend:
 #   SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID
 #   SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET
+#
+# OAuth redirect after Google login (must match your Vite dev server or deployed UI origin):
+#   FRONTEND_BASE_URL=http://localhost:5173
 
 spring:
   security:

@@ -357,8 +357,10 @@ function App() {
                 <Route path="/facilities" element={<FacilitiesDashboard />} />
                 <Route path="/bookings" element={<BookingsDashboard />} />
                 <Route path="/incidents" element={<IncidentsDashboard />} />
-                <Route path="/admin/notifications" element={<AdminNotifications />} />
-                <Route path="/admin/facilities-analytics" element={<AdminFacilitiesAnalytics />} />
+                <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
+                  <Route path="/admin/notifications" element={<AdminNotifications />} />
+                  <Route path="/admin/facilities-analytics" element={<AdminFacilitiesAnalytics />} />
+                </Route>
               </Route>
             </Route>
 

@@ -5,7 +5,9 @@ import com.smartcampus.core.model.User;
 import com.smartcampus.core.repository.NotificationRepository;
 import com.smartcampus.core.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -36,19 +38,30 @@ public class NotificationService {
         return notificationRepository.findByRecipientIdOrderByCreatedAtDesc(userId);
     }
 
+    /**
+     * Marks a notification read only if it belongs to the given user.
+     */
     @Transactional
-    public void markAsRead(Long notificationId) {
-        notificationRepository.findById(notificationId).ifPresent(n -> {
-            if (!n.isReadStatus()) {
-                n.setReadStatus(true);
-                notificationRepository.save(n);
-            }
-        });
+    public void markAsReadForRecipient(Long notificationId, Long recipientUserId) {
+        Notification n = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Notification not found"));
+        if (!n.getRecipient().getId().equals(recipientUserId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not your notification");
+        }
+        if (!n.isReadStatus()) {
+            n.setReadStatus(true);
+            notificationRepository.save(n);
+        }
     }
 
     @Transactional
     public void markAllAsRead(Long userId) {
         notificationRepository.markAllAsReadForUser(userId);
+    }
+
+    @Transactional
+    public void deleteAllForUser(Long userId) {
+        notificationRepository.deleteAllByRecipientId(userId);
     }
 }
 

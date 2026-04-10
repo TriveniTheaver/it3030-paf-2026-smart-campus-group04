@@ -120,15 +120,8 @@ public class TicketService {
 
     @Transactional
     public Ticket updateTicketStatus(Long ticketId, TicketStatus newStatus, String resolutionNotes, User actor) {
-        System.out.println("[TicketService] updateTicketStatus called. ticketId=" + ticketId + ", newStatus=" + newStatus);
         Ticket ticket = ticketRepository.findByIdWithReporter(ticketId)
                 .orElseThrow(() -> new IllegalArgumentException("Ticket not found"));
-
-        System.out.println("[TicketService] Loaded ticket id=" + ticket.getId() + ". reporter is "
-                + (ticket.getReporter() == null ? "NULL" : "NOT NULL"));
-        if (ticket.getReporter() != null) {
-            System.out.println("[TicketService] Reporter id=" + ticket.getReporter().getId());
-        }
 
         Role role = actor.getRole();
 
@@ -160,7 +153,6 @@ public class TicketService {
         String notifMsg = String.format("Your ticket #%d status has been updated to %s", ticket.getId(), newStatus.name());
         if (ticket.getReporter() != null) {
             notificationService.createNotification(ticket.getReporter().getId(), notifMsg);
-            System.out.println("[TicketService] Notification sent to user: " + ticket.getReporter().getId());
         }
 
         return savedTicket;
