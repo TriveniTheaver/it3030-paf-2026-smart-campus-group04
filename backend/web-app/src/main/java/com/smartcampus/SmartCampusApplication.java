@@ -36,7 +36,7 @@ public class SmartCampusApplication {
         BookingRepository bookingRepo,
         TicketRepository ticketRepo,
         org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
-        return _ -> {
+        return args -> {
             User admin = userRepo.findByEmail("admin@sliit.lk").orElse(new User());
             admin.setName("Admin User");
             admin.setEmail("admin@sliit.lk");
