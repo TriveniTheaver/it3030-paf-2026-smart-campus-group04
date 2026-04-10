@@ -95,7 +95,27 @@ public class TicketService {
                 .attachments(attachments)
                 .status(TicketStatus.OPEN)
                 .build();
-        return ticketRepository.save(ticket);
+        Ticket saved = ticketRepository.save(ticket);
+        String reporterLabel = reporter.getName() != null ? reporter.getName() : reporter.getEmail();
+        String adminMsg = String.format(
+                "New ticket #%d from %s: %s — %s",
+                saved.getId(),
+                reporterLabel,
+                resource.getName(),
+                saved.getCategory() != null ? saved.getCategory() : "General"
+        );
+        for (User admin : userRepository.findByRole(Role.ADMIN)) {
+            notificationService.createNotification(admin.getId(), adminMsg);
+        }
+        notificationService.createNotification(
+                reporter.getId(),
+                String.format(
+                        "Ticket #%d submitted for %s. Staff will review it soon.",
+                        saved.getId(),
+                        resource.getName()
+                )
+        );
+        return saved;
     }
 
     @Transactional
@@ -208,6 +228,14 @@ public class TicketService {
                 && author.getId().equals(ticket.getReporter().getId())
                 && ticket.getAssignee() != null) {
             notificationService.createNotification(ticket.getAssignee().getId(), staffMsg);
+        }
+
+        if (ticket.getReporter() != null
+                && author.getId().equals(ticket.getReporter().getId())
+                && ticket.getAssignee() == null) {
+            for (User admin : userRepository.findByRole(Role.ADMIN)) {
+                notificationService.createNotification(admin.getId(), staffMsg);
+            }
         }
 
         return savedComment;

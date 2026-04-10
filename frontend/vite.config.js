@@ -16,6 +16,15 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8081',
         changeOrigin: true
+      },
+      // Spring Security OAuth2 (browser redirects to /oauth2/authorization/google on the dev server)
+      '/oauth2': {
+        target: 'http://localhost:8081',
+        changeOrigin: true
+      },
+      '/login/oauth2': {
+        target: 'http://localhost:8081',
+        changeOrigin: true
       }
     }
   }

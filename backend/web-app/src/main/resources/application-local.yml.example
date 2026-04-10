@@ -1,0 +1,27 @@
+# Copy this file to application-local.yml (same folder) and fill in real values.
+# application-local.yml is gitignored — never commit secrets.
+#
+# Google Cloud Console: APIs & Services → Credentials → Create OAuth client ID
+#   Application type: Web application
+#   Authorized redirect URIs (add both if you switch between them):
+#     - http://localhost:8081/login/oauth2/code/google
+#     - http://127.0.0.1:8081/login/oauth2/code/google
+#
+# OAuth consent screen: if status is "Testing", add your Gmail under Test users.
+#
+# Alternative (no file): set environment variables before starting the backend:
+#   SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID
+#   SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: YOUR_CLIENT_ID.apps.googleusercontent.com
+            client-secret: YOUR_CLIENT_SECRET
+            scope:
+              - openid
+              - profile
+              - email

@@ -23,14 +23,9 @@ spring:
     console:
       enabled: false
 
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: "PLACEHOLDER_GOOGLE_CLIENT_ID"
-            client-secret: "PLACEHOLDER_GOOGLE_CLIENT_SECRET"
-            scope: profile, email
+  # Google Sign-In is optional. Do not put OAuth secrets in this file (Git).
+  # Copy application-local.yml.example → application-local.yml and add your Web client id/secret,
+  # or set SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID and ..._CLIENT_SECRET.
 
 server:
   port: 8081

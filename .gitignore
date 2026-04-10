@@ -10,8 +10,11 @@
 .idea/
 .vscode/
 
-# Local DB secrets (optional import from application.yml)
+# Local secrets (never commit — Spring loads application-local.yml automatically)
 backend/web-app/src/main/resources/application-local.yml
+.env
+.env.*
+!.env.example
 
 # OS junk
 .DS_Store

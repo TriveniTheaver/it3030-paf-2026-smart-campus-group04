@@ -23,13 +23,20 @@ cd web-app
 mvn spring-boot:run
 ```
 
-Configuration: `backend/web-app/src/main/resources/application.yml` (H2 in-memory by default). Replace Google OAuth placeholders for real Google sign-in.
-
 Configuration: `backend/web-app/src/main/resources/application.yml` (MySQL by default).
 
 - **Default DB**: MySQL at `jdbc:mysql://localhost:3306/smartcampus` (see env vars `SMARTCAMPUS_DB_URL`, `SMARTCAMPUS_DB_USERNAME`, `SMARTCAMPUS_DB_PASSWORD`)
 - **Local override**: `backend/web-app/src/main/resources/application-local.yml` is imported automatically (gitignored) and can override secrets like DB password.
 - **Schema**: `spring.jpa.hibernate.ddl-auto=update` (creates/updates tables automatically for dev)
+
+### Google Sign-In (`invalid_client` / OAuth client not found)
+
+By default the committed config **does not** register Google OAuth (so you are not sent to Google with invalid client IDs). To enable it, create a **Web application** OAuth client in [Google Cloud Console](https://console.cloud.google.com/apis/credentials) and either:
+
+- Copy `backend/web-app/src/main/resources/application-local.yml.example` to **`application-local.yml`** and replace the `YOUR_…` values with your real client id and secret, or  
+- Set **`SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID`** and **`SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET`** in the environment.
+
+Add **Authorized redirect URI**: `http://localhost:8081/login/oauth2/code/google`. If the consent screen is in **Testing**, add your Gmail under **Test users**.
 
 ### Seeded accounts (development)
 
