@@ -19,8 +19,9 @@ jobs:
           java-version: '23'
           distribution: 'temurin'
           
-      - name: Build Backend with Maven
-        run: mvn clean install -DskipTests
+      # Runs unit + integration tests (e.g. web-app FacilitiesResourceApiIT with H2 from src/test/resources)
+      - name: Test and build Backend with Maven
+        run: mvn -B -ntp clean verify
         working-directory: ./backend
 
   frontend-build:
