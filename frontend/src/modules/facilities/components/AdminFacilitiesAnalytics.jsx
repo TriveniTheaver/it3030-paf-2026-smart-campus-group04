@@ -10,6 +10,14 @@ export default function AdminFacilitiesAnalytics() {
   const [error, setError] = useState('');
   const [data, setData] = useState(null);
 
+  const peakSeries = useMemo(() => {
+    const arr = data?.peakHours || [];
+    return Array.from({ length: 24 }, (_, hour) => {
+      const hit = arr.find((x) => Number(x?.hour) === hour);
+      return { hour, approved: Number(hit?.approvedBookings || 0) };
+    });
+  }, [data]);
+
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
@@ -31,19 +39,13 @@ export default function AdminFacilitiesAnalytics() {
   }, [days]);
 
   const peakMax = useMemo(() => {
-    const arr = data?.peakHours || [];
-    return arr.reduce((m, x) => Math.max(m, Number(x?.approvedBookings || 0)), 0);
-  }, [data]);
+    return peakSeries.reduce((m, x) => Math.max(m, Number(x?.approved || 0)), 0);
+  }, [peakSeries]);
 
   const peakBest = useMemo(() => {
-    const arr = data?.peakHours || [];
-    if (arr.length === 0) return null;
-    return arr.reduce(
-      (best, cur) =>
-        Number(cur?.approvedBookings || 0) > Number(best?.approvedBookings || 0) ? cur : best,
-      arr[0]
-    );
-  }, [data]);
+    if (peakSeries.length === 0) return null;
+    return peakSeries.reduce((best, cur) => (cur.approved > best.approved ? cur : best), peakSeries[0]);
+  }, [peakSeries]);
 
   const summary = data?.summary;
   const fromLabel = data?.from ? new Date(data.from).toLocaleDateString() : '';
@@ -158,12 +160,12 @@ export default function AdminFacilitiesAnalytics() {
               <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-5">
                 <div>
                   <p className="sc-meta">
-                    Heatmap of approved booking start times across 24 hours (0–23) across all approved bookings.
+                    Approved booking start times across 24 hours (0–23) within the selected reporting window.
                   </p>
-                  {peakBest && Number(peakBest?.approvedBookings || 0) > 0 ? (
+                  {peakBest && Number(peakBest?.approved || 0) > 0 ? (
                     <p className="sc-label mt-2">
                       Peak hour: <span className="font-semibold text-slate-700">{String(peakBest.hour).padStart(2, '0')}:00</span> •{' '}
-                      <span className="font-semibold text-slate-700">{Number(peakBest.approvedBookings || 0)}</span> approved
+                      <span className="font-semibold text-slate-700">{Number(peakBest.approved || 0)}</span> approved
                     </p>
                   ) : (
                     <p className="sc-label mt-2">No approved bookings in this window yet.</p>
@@ -177,95 +179,87 @@ export default function AdminFacilitiesAnalytics() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-[repeat(24,minmax(0,1fr))] gap-2">
-                {(data?.peakHours || []).map((h) => {
-                  const hour = Number(h.hour || 0);
-                  const val = Number(h.approvedBookings || 0);
-                  const pct = peakMax <= 0 ? 0 : val / peakMax;
+              <div className="mt-3">
+                {peakMax <= 0 ? (
+                  <p className="sc-meta text-slate-500">No approved bookings to chart.</p>
+                ) : (
+                  (() => {
+                    const w = 820;
+                    const h = 180;
+                    const padX = 26;
+                    const padY = 18;
+                    const innerW = w - padX * 2;
+                    const innerH = h - padY * 2;
 
-                  const isPeak = peakBest && Number(peakBest.hour) === hour && Number(peakBest.approvedBookings || 0) > 0;
-                  // Show a clearer gradient even for low counts:
-                  // 0 -> slate, low-but-nonzero -> light blue, mid -> blue, high/peak -> orange.
-                  const bg =
-                    pct >= 0.85
-                      ? 'bg-sliit-orange'
-                      : pct >= 0.45
-                        ? 'bg-sliit-blue'
-                        : pct > 0
-                          ? 'bg-blue-200'
-                          : 'bg-slate-200';
+                    const xFor = (i) => padX + (i / 23) * innerW;
+                    const yFor = (v) => padY + (1 - v / peakMax) * innerH;
 
-                  const showLabel = hour % 3 === 0;
-                  const dayPart = hour < 6 ? 'Night' : hour < 12 ? 'Morning' : hour < 18 ? 'Afternoon' : 'Evening';
+                    const pts = peakSeries.map((p, i) => ({ ...p, x: xFor(i), y: yFor(p.approved) }));
+                    const d = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+                    const area = `${d} L ${xFor(23).toFixed(1)} ${(padY + innerH).toFixed(1)} L ${xFor(0).toFixed(1)} ${(padY + innerH).toFixed(1)} Z`;
 
-                  return (
-                    <div key={hour} className="flex flex-col items-center gap-2">
-                      <div className="relative w-full">
-                        <div
-                          title={`${String(hour).padStart(2, '0')}:00 (${dayPart}) — ${val} approved`}
-                          className={[
-                            'h-10 w-full rounded-xl border transition-all',
-                            bg,
-                            isPeak ? 'border-sliit-orange shadow-md' : 'border-white/60',
-                            val > 0 ? 'hover:brightness-110' : 'hover:bg-slate-300',
-                          ].join(' ')}
-                        />
-                        {isPeak ? (
-                          <div className="absolute -top-2 -right-2 px-2 py-0.5 rounded-full bg-sliit-orange text-white text-[10px] font-semibold shadow">
-                            PEAK
-                          </div>
-                        ) : null}
+                    return (
+                      <div className="w-full">
+                        <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-[11rem]">
+                          <defs>
+                            <linearGradient id="scPeakFill" x1="0" x2="1" y1="0" y2="0">
+                              <stop offset="0%" stopColor="#CBD5E1" stopOpacity="0.35" />
+                              <stop offset="55%" stopColor="#002147" stopOpacity="0.25" />
+                              <stop offset="100%" stopColor="#F39C12" stopOpacity="0.25" />
+                            </linearGradient>
+                          </defs>
+
+                          {/* grid */}
+                          {[0, 0.25, 0.5, 0.75, 1].map((t) => {
+                            const y = padY + t * innerH;
+                            return <line key={t} x1={padX} y1={y} x2={w - padX} y2={y} stroke="#E2E8F0" strokeWidth="1" />;
+                          })}
+
+                          {/* area + line */}
+                          <path d={area} fill="url(#scPeakFill)" />
+                          <path d={d} fill="none" stroke="#002147" strokeWidth="3" />
+
+                          {/* points */}
+                          {pts.map((p) => {
+                            const isPeak = peakBest && p.hour === peakBest.hour && peakBest.approved > 0;
+                            return (
+                              <g key={p.hour}>
+                                <circle
+                                  cx={p.x}
+                                  cy={p.y}
+                                  r={isPeak ? 5 : 3.5}
+                                  fill={isPeak ? '#F39C12' : '#0F172A'}
+                                  opacity={p.approved > 0 ? 0.95 : 0.35}
+                                >
+                                  <title>{`${String(p.hour).padStart(2, '0')}:00 — ${p.approved} approved`}</title>
+                                </circle>
+                              </g>
+                            );
+                          })}
+
+                          {/* x labels */}
+                          {pts.filter((p) => p.hour % 3 === 0).map((p) => (
+                            <text
+                              key={p.hour}
+                              x={p.x}
+                              y={h - 6}
+                              textAnchor="middle"
+                              fontSize="11"
+                              fill="#64748B"
+                              fontWeight="600"
+                            >
+                              {String(p.hour).padStart(2, '0')}
+                            </text>
+                          ))}
+                        </svg>
                       </div>
-                      <span className={['sc-label', showLabel ? 'text-slate-600' : 'text-transparent select-none'].join(' ')}>
-                        {showLabel ? String(hour).padStart(2, '0') : ''}
-                      </span>
-                    </div>
-                  );
-                })}
+                    );
+                  })()
+                )}
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl overflow-hidden">
-            <div className="p-8 border-b border-slate-100 bg-slate-50/40">
-              <h2 className="sc-section-title text-sliit-navy">Utilization score (novel)</h2>
-              <p className="sc-meta mt-1">
-                Utilization score = booked minutes ÷ (available minutes per day × window days).
-              </p>
-            </div>
-            <div className="p-8">
-              {(data?.utilization || []).length === 0 ? (
-                <p className="sc-meta">No resources found.</p>
-              ) : (
-                <div className="space-y-4">
-                  {(data?.utilization || []).map((u) => {
-                    const score = Number(u.utilizationScore || 0);
-                    const bar = Math.max(0, Math.min(100, Math.round(score * 100)));
-                    const color = bar >= 70 ? 'bg-emerald-600' : bar >= 35 ? 'bg-amber-500' : 'bg-slate-300';
-                    return (
-                      <div key={u.resourceId} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-                        <div className="md:col-span-4 min-w-0">
-                          <p className="font-semibold text-slate-800 truncate">{u.name}</p>
-                          <p className="sc-label">
-                            {u.bookedMinutes} mins booked • {u.availableMinutesPerDay} mins/day
-                          </p>
-                        </div>
-                        <div className="md:col-span-6">
-                          <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
-                            <div className={`h-full ${color}`} style={{ width: `${bar}%` }} />
-                          </div>
-                        </div>
-                        <div className="md:col-span-2 text-right">
-                          <p className="font-semibold text-slate-900">{fmtPct(score)}</p>
-                          <p className="sc-label">score</p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
         </>
       )}
     </div>

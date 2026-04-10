@@ -4,7 +4,7 @@ spring:
   config:
     import: optional:classpath:application-local.yml
   datasource:
-    url: ${SMARTCAMPUS_DB_URL:jdbc:mysql://localhost:3306/smartcampus?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    url: ${SMARTCAMPUS_DB_URL:jdbc:mysql://localhost:3306/smartcampus?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Colombo}
     username: ${SMARTCAMPUS_DB_USERNAME:root}
     # Override with SMARTCAMPUS_DB_PASSWORD, application-local.yml, or default below.
     password: ${SMARTCAMPUS_DB_PASSWORD:root}
@@ -16,6 +16,8 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        jdbc:
+          time_zone: Asia/Colombo
     database-platform: org.hibernate.dialect.MySQLDialect
   h2:
     console:
