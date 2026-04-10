@@ -104,7 +104,7 @@ export default function HomePage() {
         
         <div className="relative h-full max-w-7xl mx-auto px-8 flex flex-col justify-center items-start">
           <div className="max-w-2xl animate-in slide-in-from-left duration-1000">
-            <h1 className="text-sliit-navy mb-5 leading-none text-7xl font-extrabold tracking-tight">
+            <h1 className="text-sliit-navy mb-5 leading-[1.1] text-5xl sm:text-6xl font-semibold tracking-[0.08em]">
               EVOLVE BEYOND
             </h1>
             <div className="w-28 h-2 bg-sliit-orange mb-8"></div>
