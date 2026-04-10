@@ -73,6 +73,23 @@ function truncateTicketText(str, max = 44) {
   return s.length <= max ? s : `${s.slice(0, max - 1)}…`;
 }
 
+function formatTicketStatus(status) {
+  if (status == null || status === '') return '—';
+  return String(status).replace(/_/g, ' ');
+}
+
+/** Resolved / closed / rejected tickets: comment thread is read-only (matches backend). */
+const TICKET_COMMENTS_LOCKED_STATUSES = ['RESOLVED', 'CLOSED', 'REJECTED'];
+function isTicketCommentsLocked(ticket) {
+  return ticket != null && TICKET_COMMENTS_LOCKED_STATUSES.includes(ticket.status);
+}
+
+/** Terminal / post-workflow: admins only view details (no assign or triage). */
+const ADMIN_ACTIONS_LOCKED_STATUSES = ['RESOLVED', 'CLOSED', 'REJECTED'];
+function isAdminTicketActionsLocked(ticket) {
+  return ticket != null && ADMIN_ACTIONS_LOCKED_STATUSES.includes(ticket.status);
+}
+
 /**
  * @returns {{ valid: boolean | null, message: string }} valid null = optional empty field
  */
@@ -445,6 +462,18 @@ const IncidentsDashboard = () => {
     });
   }, [fetchTickets]);
 
+  /** Load full ticket so nested fields (assignee, resource, status) match the API; list rows can be partial. */
+  const openTicketDetails = useCallback(async (ticket) => {
+    if (!ticket?.id) return;
+    setSelectedTicket(ticket);
+    try {
+      const res = await axios.get(`/api/tickets/${ticket.id}`);
+      setSelectedTicket(res.data);
+    } catch (err) {
+      console.error('Failed to load ticket details', err);
+    }
+  }, []);
+
   const fetchTechnicians = useCallback(async () => {
     try {
       const res = await axios.get('/api/users/technicians');
@@ -502,6 +531,13 @@ const IncidentsDashboard = () => {
       }
     }
   }, [selectedTicket, fetchComments, isAdmin, isTechnician]);
+
+  useEffect(() => {
+    if (selectedTicket && isTicketCommentsLocked(selectedTicket)) {
+      setEditingCommentId(null);
+      setEditDraft('');
+    }
+  }, [selectedTicket?.id, selectedTicket?.status]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const handlePostTicket = async (e) => {
@@ -580,7 +616,7 @@ const IncidentsDashboard = () => {
 
   const handlePostComment = async (e) => {
     e.preventDefault();
-    if (!newComment.trim() || !selectedTicket) return;
+    if (!newComment.trim() || !selectedTicket || isTicketCommentsLocked(selectedTicket)) return;
     try {
       await axios.post(`/api/tickets/${selectedTicket.id}/comments`, { content: newComment });
       setNewComment('');
@@ -604,7 +640,7 @@ const IncidentsDashboard = () => {
 
   const handleSaveCommentEdit = async (e, commentId) => {
     e.preventDefault();
-    if (!editDraft.trim() || !selectedTicket) return;
+    if (!editDraft.trim() || !selectedTicket || isTicketCommentsLocked(selectedTicket)) return;
     try {
       await axios.put(`/api/tickets/${selectedTicket.id}/comments/${commentId}`, {
         content: editDraft.trim(),
@@ -620,7 +656,7 @@ const IncidentsDashboard = () => {
 
   const handleDeleteComment = async (commentId) => {
     if (!window.confirm('Delete this comment? This cannot be undone.')) return;
-    if (!selectedTicket) return;
+    if (!selectedTicket || isTicketCommentsLocked(selectedTicket)) return;
     try {
       await axios.delete(`/api/tickets/${selectedTicket.id}/comments/${commentId}`);
       if (editingCommentId === commentId) {
@@ -717,6 +753,10 @@ const IncidentsDashboard = () => {
     isTechnician &&
     selectedTicket?.assignee?.id != null &&
     selectedTicket.assignee.id === currentUser?.id;
+
+  const ticketCommentsLocked = selectedTicket != null && isTicketCommentsLocked(selectedTicket);
+  const adminTicketActionsLocked =
+    isAdmin && selectedTicket != null && isAdminTicketActionsLocked(selectedTicket);
 
   return (
     <div className="p-6 max-w-7xl mx-auto flex flex-col md:flex-row gap-8 relative">
@@ -1029,27 +1069,27 @@ const IncidentsDashboard = () => {
                   <span className="hidden w-full text-[10px] font-semibold uppercase tracking-wider text-slate-500 sm:mb-0 sm:inline sm:w-auto sm:mr-1">
                     Status
                   </span>
-                {TICKET_STATUS_CHIPS.map((chip) => {
-                  const n = statusChipCounts[chip.id] ?? 0;
-                  return (
-                  <button
-                    key={chip.id}
-                    type="button"
-                    onClick={() => setTicketStatusFilter(chip.id)}
-                    className={`rounded-full px-3.5 py-2 text-xs font-semibold border transition-all ${ticketStatusFilter === chip.id
-                      ? 'border-sliit-navy bg-sliit-navy text-white shadow-sm'
-                      : 'border-slate-200 bg-white text-slate-600 hover:border-sliit-orange/40 hover:text-slate-900'
-                      }`}
-                  >
-                    <span>{chip.label}</span>
-                    <span
-                      className={`ml-1 tabular-nums ${ticketStatusFilter === chip.id ? 'text-white/90' : 'text-slate-400'}`}
-                    >
-                      ({n})
-                    </span>
-                  </button>
-                  );
-                })}
+                  {TICKET_STATUS_CHIPS.map((chip) => {
+                    const n = statusChipCounts[chip.id] ?? 0;
+                    return (
+                      <button
+                        key={chip.id}
+                        type="button"
+                        onClick={() => setTicketStatusFilter(chip.id)}
+                        className={`rounded-full px-3.5 py-2 text-xs font-semibold border transition-all ${ticketStatusFilter === chip.id
+                          ? 'border-sliit-navy bg-sliit-navy text-white shadow-sm'
+                          : 'border-slate-200 bg-white text-slate-600 hover:border-sliit-orange/40 hover:text-slate-900'
+                          }`}
+                      >
+                        <span>{chip.label}</span>
+                        <span
+                          className={`ml-1 tabular-nums ${ticketStatusFilter === chip.id ? 'text-white/90' : 'text-slate-400'}`}
+                        >
+                          ({n})
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
               <div className="relative shrink-0 self-end sm:self-center" ref={sortDropdownRef}>
@@ -1218,7 +1258,7 @@ const IncidentsDashboard = () => {
                           </div>
                           <button
                             type="button"
-                            onClick={() => setSelectedTicket(ticket)}
+                            onClick={() => openTicketDetails(ticket)}
                             className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-blue-50 px-4 py-2 text-xs font-semibold text-sliit-blue transition-all hover:bg-sliit-blue hover:text-white sm:min-w-[9rem]"
                           >
                             Open details
@@ -1248,11 +1288,21 @@ const IncidentsDashboard = () => {
               </button>
 
               <div className="mb-8">
-                <span
-                  className={`px-4 py-1.5 text-xs font-semibold rounded-full border shadow-sm ${getStatusColor(selectedTicket.status)}`}
-                >
-                  {selectedTicket.status}
-                </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className={`px-4 py-1.5 text-xs font-semibold rounded-full border shadow-sm ${getStatusColor(selectedTicket.status)}`}
+                  >
+                    {formatTicketStatus(selectedTicket.status)}
+                  </span>
+                  <span className="inline-block w-fit rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+                    {selectedTicket.category || 'General'}
+                  </span>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[10px] font-semibold border shadow-sm ${getPriorityColor(selectedTicket.priority)}`}
+                  >
+                    {selectedTicket.priority || '—'}
+                  </span>
+                </div>
                 <h2 className="sc-page-title text-slate-900 mt-6 leading-tight">
                   {selectedTicket.resource?.name || 'Incident details'}
                 </h2>
@@ -1261,6 +1311,21 @@ const IncidentsDashboard = () => {
                   <span className="text-sliit-blue font-semibold">
                     {selectedTicket.preferredContact || 'Not specified'}
                   </span>
+                </div>
+                <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50/90 px-3 py-2.5">
+                  <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                    Assigned technician
+                  </span>
+                  {selectedTicket.assignee ? (
+                    <p className="mt-1 text-sm font-semibold text-sliit-blue">
+                      {selectedTicket.assignee.name || selectedTicket.assignee.email || 'Technician'}
+                      {selectedTicket.assignee.email ? (
+                        <span className="ml-2 font-normal text-slate-500">· {selectedTicket.assignee.email}</span>
+                      ) : null}
+                    </p>
+                  ) : (
+                    <p className="mt-1 text-sm font-medium text-slate-500">Not assigned yet</p>
+                  )}
                 </div>
                 {isUser ? (
                   <p className="sc-meta text-slate-500 mt-4">
@@ -1298,7 +1363,7 @@ const IncidentsDashboard = () => {
                   </div>
                 )}
 
-                {isAdmin ? (
+                {isAdmin && !adminTicketActionsLocked ? (
                   <div className="pt-8 border-t border-slate-100 space-y-3">
                     <h4 className="sc-section-title text-sliit-blue text-sm mb-1">Assign technician</h4>
                     <p className="sc-meta text-slate-500 text-xs mb-4">
@@ -1326,7 +1391,7 @@ const IncidentsDashboard = () => {
                   </div>
                 ) : null}
 
-                {isAdmin ? (
+                {isAdmin && !adminTicketActionsLocked ? (
                   <div className="pt-8 border-t border-slate-100">
                     <h4 className="sc-section-title text-sliit-blue text-sm mb-1">Administrator triage</h4>
                     <p className="sc-meta text-slate-500 text-xs mb-4">
@@ -1358,6 +1423,15 @@ const IncidentsDashboard = () => {
                         Apply triage decision
                       </button>
                     </form>
+                  </div>
+                ) : null}
+
+                {isAdmin && adminTicketActionsLocked ? (
+                  <div className="pt-8 border-t border-slate-100">
+                    <p className="text-xs font-medium text-slate-500">
+                      This ticket is {formatTicketStatus(selectedTicket.status).toLowerCase()}. Assignment and triage are
+                      not available—view details and thread only.
+                    </p>
                   </div>
                 ) : null}
 
@@ -1407,7 +1481,14 @@ const IncidentsDashboard = () => {
             </div>
 
             <div className="w-full md:w-1/2 bg-slate-50 p-12 flex flex-col">
-              <h4 className="sc-label mb-8 block">Thread ({comments.length})</h4>
+              <h4 className={`sc-label block ${ticketCommentsLocked ? 'mb-2' : 'mb-8'}`}>
+                Thread ({comments.length})
+              </h4>
+              {ticketCommentsLocked ? (
+                <p className="mb-6 text-xs font-medium text-slate-500">
+                  This ticket is {formatTicketStatus(selectedTicket.status).toLowerCase()}. The thread is read-only.
+                </p>
+              ) : null}
 
               <div className="flex-1 overflow-y-auto space-y-6 mb-8 no-scrollbar">
                 {comments.length === 0 ? (
@@ -1437,7 +1518,7 @@ const IncidentsDashboard = () => {
                                 </span>
                               ) : null}
                             </div>
-                            {isOwner && !isEditing ? (
+                            {isOwner && !isEditing && !ticketCommentsLocked ? (
                               <div className="flex items-center gap-1 shrink-0">
                                 <button
                                   type="button"
@@ -1504,14 +1585,26 @@ const IncidentsDashboard = () => {
                   type="text"
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
+                  disabled={ticketCommentsLocked}
                   placeholder={
-                    isUser ? 'Add an update for staff…' : 'Add an operational note…'
+                    ticketCommentsLocked
+                      ? 'Thread closed for this ticket'
+                      : isUser
+                        ? 'Add an update for staff…'
+                        : 'Add an operational note…'
                   }
-                  className="w-full bg-white border-2 border-slate-100 rounded-2xl p-5 pr-16 font-medium text-sm outline-none focus:border-sliit-orange transition-all shadow-sm"
+                  className={`w-full bg-white border-2 border-slate-100 rounded-2xl p-5 pr-16 font-medium text-sm outline-none transition-all shadow-sm ${ticketCommentsLocked
+                    ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 placeholder:text-slate-400'
+                    : 'focus:border-sliit-orange'
+                    }`}
                 />
                 <button
                   type="submit"
-                  className="absolute right-3 top-3 bottom-3 px-4 bg-sliit-blue text-white rounded-xl hover:bg-sliit-navy transition-all transform active:scale-95"
+                  disabled={ticketCommentsLocked}
+                  className={`absolute right-3 top-3 bottom-3 px-4 rounded-xl transition-all transform active:scale-95 ${ticketCommentsLocked
+                    ? 'cursor-not-allowed bg-slate-300 text-slate-500'
+                    : 'bg-sliit-blue text-white hover:bg-sliit-navy'
+                    }`}
                 >
                   <MessageSquare size={16} />
                 </button>
